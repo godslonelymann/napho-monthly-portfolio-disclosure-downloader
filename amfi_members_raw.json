@@ -1,0 +1,1745 @@
+[
+ {
+  "mf_id": "62",
+  "mf_name": "360 ONE Mutual Fund",
+  "amc_name": "360 ONE Asset Management Limited",
+  "amc_website": "https://www.360.one/asset-management/mutualfund/",
+  "amc_schemewise_annual_report": "https://www.360.one/asset/mutual-funds/downloads/",
+  "amc_fortnightly_portfolio_disclosure": "https://www.360.one/asset/mutual-funds/downloads/",
+  "amc_monthly_portfolio_disclosure": "https://www.360.one/asset/mutual-funds/downloads/",
+  "amc_halfYearly_portfolio_disclosure": "https://www.360.one/asset-management/mutualfund/downloads/disclosures/",
+  "amc_monthly_mf_factsheets": "https://www.360.one/asset/mutual-funds/downloads/",
+  "amc_riskometer_monthly": "https://www.360.one/asset-management/mutualfund/downloads/disclosures/",
+  "amc_riskometer_yearly": "https://www.360.one/asset-management/mutualfund/downloads/disclosures/",
+  "amc_unclaimed_dividend_amt": "http://www.camsonline.com/InvestorServices/COL_ISUnclaimedStatus.aspx",
+  "amc_unclaimed_redemption_amt": "http://www.camsonline.com/InvestorServices/COL_ISUnclaimedStatus.aspx",
+  "amc_investonline_in_mf": "https://www.360.one/asset-management/mutualfund/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=62",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=62",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai62.pdf",
+  "scheme_wise": "https://www.360.one/asset/mutual-funds/downloads/",
+  "icon_wordmark": {
+   "url": "/uploads/360_ONE_Asset_230x60_7b7ee47897.png",
+   "hash": "360_ONE_Asset_230x60_7b7ee47897"
+  },
+  "amc_kyc": "https://mflogin.360.one/kycmodfication",
+  "icons": [
+   {
+    "url": "/uploads/360_ONE_Asset_64x64_8c6857d60a.png",
+    "hash": "360_ONE_Asset_64x64_8c6857d60a"
+   }
+  ]
+ },
+ {
+  "mf_id": "85",
+  "mf_name": "Abakkus Mutual Fund",
+  "amc_name": "Abakkus Investment Managers Private Limited",
+  "amc_website": "https://www.abakkusmf.com/",
+  "amc_schemewise_annual_report": "https://www.abakkusmf.com/uploads/Abakkus_Mutual_Fund_Annual_Report_FY_25_26_e6b38432b2.pdf",
+  "amc_fortnightly_portfolio_disclosure": "https://www.abakkusmf.com/statutory-disclosures.html#",
+  "amc_monthly_portfolio_disclosure": "https://www.abakkusmf.com/statutory-disclosures.html#",
+  "amc_halfYearly_portfolio_disclosure": "https://www.abakkusmf.com/statutory-disclosures.html#",
+  "amc_monthly_mf_factsheets": "https://www.abakkusmf.com/factsheet.html#",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=85",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=85",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai85.pdf",
+  "scheme_wise": "https://www.abakkusmf.com/uploads/Abakkus_Mutual_Fund_Annual_Report_FY_25_26_e6b38432b2.pdf",
+  "icon_wordmark": {
+   "url": "/uploads/AMC_Logo_Abakkus_mutual_fund_230x60_165cf79929.png",
+   "hash": "AMC_Logo_Abakkus_mutual_fund_230x60_165cf79929"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/AMC_Logo_Abakkus_mutual_fund_64x64_3d984fbdc8.png",
+    "hash": "AMC_Logo_Abakkus_mutual_fund_64x64_3d984fbdc8"
+   }
+  ]
+ },
+ {
+  "mf_id": "3",
+  "mf_name": "Aditya Birla Sun Life Mutual Fund",
+  "amc_name": "Aditya Birla Sun Life AMC Limited",
+  "amc_website": "https://mutualfund.adityabirlacapital.com/",
+  "amc_schemewise_annual_report": "https://mutualfund.adityabirlacapital.com/financials",
+  "amc_fortnightly_portfolio_disclosure": "https://mutualfund.adityabirlacapital.com/forms-and-downloads/portfolio",
+  "amc_monthly_portfolio_disclosure": "https://mutualfund.adityabirlacapital.com/forms-and-downloads/portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://mutualfund.adityabirlacapital.com/forms-and-downloads/portfolio",
+  "amc_monthly_mf_factsheets": "https://mutualfund.adityabirlacapital.com/forms-and-downloads/factsheets",
+  "amc_riskometer_monthly": "https://mutualfund.adityabirlacapital.com/forms-and-downloads/scheme-risk-o-meter",
+  "amc_riskometer_yearly": "https://mutualfund.adityabirlacapital.com/forms-and-downloads/scheme-risk-o-meter",
+  "amc_unclaimed_dividend_amt": "https://mutualfund.adityabirlacapital.com/unclaimed-redemption-and-dividends",
+  "amc_unclaimed_redemption_amt": "https://mutualfund.adityabirlacapital.com/unclaimed-redemption-and-dividends",
+  "amc_investonline_in_mf": "https://mutualfund.adityabirlacapital.com/portal/investor/quick-invest/browsefund",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=3",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=3",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai3.pdf",
+  "scheme_wise": "https://mutualfund.adityabirlacapital.com/financials",
+  "icon_wordmark": {
+   "url": "/uploads/ABSLAMC_logo_230_x_60_pix_6796158e51.png",
+   "hash": "ABSLAMC_logo_230_x_60_pix_6796158e51"
+  },
+  "amc_kyc": "https://mutualfund.adityabirlacapital.com/campaign/modification-of-kyc",
+  "icons": [
+   {
+    "url": "/uploads/ABSLAMC_Square_Logo_10255de021.png",
+    "hash": "ABSLAMC_Square_Logo_10255de021"
+   }
+  ]
+ },
+ {
+  "mf_id": "86",
+  "mf_name": "AlphaGrep Mutual Fund",
+  "amc_name": "AlphaGrep Investment Management Private Limited",
+  "amc_website": "https://www.alphagrepmf.ai/home",
+  "amc_schemewise_annual_report": null,
+  "amc_fortnightly_portfolio_disclosure": "",
+  "amc_monthly_portfolio_disclosure": "https://www.alphagrepmf.ai/disclosures",
+  "amc_halfYearly_portfolio_disclosure": "",
+  "amc_monthly_mf_factsheets": "",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=86",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=86",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai86.pdf",
+  "scheme_wise": "",
+  "icon_wordmark": {
+   "url": "/uploads/AG_86_02c18325ff.svg",
+   "hash": "AG_86_02c18325ff"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/AG_MF_86_cf724bde11.svg",
+    "hash": "AG_MF_86_cf724bde11"
+   }
+  ]
+ },
+ {
+  "mf_id": "80",
+  "mf_name": "Angel One Mutual Fund",
+  "amc_name": "Angel One Asset Management Company Limited",
+  "amc_website": "https:\\\\angelonemf.com",
+  "amc_schemewise_annual_report": "https://www.angelonemf.com/downloads",
+  "amc_fortnightly_portfolio_disclosure": "",
+  "amc_monthly_portfolio_disclosure": "https://www.angelonemf.com/downloads",
+  "amc_halfYearly_portfolio_disclosure": "https://www.angelonemf.com/downloads",
+  "amc_monthly_mf_factsheets": "https://www.angelonemf.com/downloads",
+  "amc_riskometer_monthly": "https://www.angelonemf.com/downloads",
+  "amc_riskometer_yearly": "https://www.angelonemf.com/downloads",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "https://investor.angelonemf.com/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=80",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=80",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai80.pdf",
+  "scheme_wise": "https://www.angelonemf.com/downloads",
+  "icon_wordmark": {
+   "url": "/uploads/Angel_One_AMC_Logo_230x60_b7ff844cc4.svg",
+   "hash": "Angel_One_AMC_Logo_230x60_b7ff844cc4"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/Angel_One_AMC_Logo_64x64_e5f294c893.svg",
+    "hash": "Angel_One_AMC_Logo_64x64_e5f294c893"
+   }
+  ]
+ },
+ {
+  "mf_id": "87",
+  "mf_name": "ASK MUTUAL FUND",
+  "amc_name": "ASK ASSET MANAGEMENT PRIVATE LIMITED",
+  "amc_website": "www.askmutualfund.com",
+  "amc_schemewise_annual_report": null,
+  "amc_fortnightly_portfolio_disclosure": "",
+  "amc_monthly_portfolio_disclosure": "",
+  "amc_halfYearly_portfolio_disclosure": "",
+  "amc_monthly_mf_factsheets": "",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=87",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=87",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai87.pdf",
+  "scheme_wise": "",
+  "icon_wordmark": null,
+  "amc_kyc": null,
+  "icons": []
+ },
+ {
+  "mf_id": "53",
+  "mf_name": "Axis Mutual Fund",
+  "amc_name": "Axis Asset Management Co. Ltd.",
+  "amc_website": "https://www.axismf.com",
+  "amc_schemewise_annual_report": "https://www.axismf.com/about-us#financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.axismf.com/statutory-disclosures",
+  "amc_monthly_portfolio_disclosure": "https://www.axismf.com/statutory-disclosures",
+  "amc_halfYearly_portfolio_disclosure": "https://www.axismf.com/about-us#financials",
+  "amc_monthly_mf_factsheets": "https://www.axismf.com/downloads",
+  "amc_riskometer_monthly": "https://www.axismf.com/statutory-disclosures",
+  "amc_riskometer_yearly": "https://www.axismf.com/statutory-disclosures",
+  "amc_unclaimed_dividend_amt": "https://www.axismf.com/unclaimed-redemption",
+  "amc_unclaimed_redemption_amt": "https://www.axismf.com/unclaimed-redemption",
+  "amc_investonline_in_mf": "https://www.axismf.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=53",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=53",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai53.pdf",
+  "scheme_wise": "https://www.axismf.com/about-us#financials",
+  "icon_wordmark": {
+   "url": "/uploads/AMC_230x60_white_1_cbe473b86e.svg",
+   "hash": "AMC_230x60_white_1_cbe473b86e"
+  },
+  "amc_kyc": "https://www.axismf.com/",
+  "icons": [
+   {
+    "url": "/uploads/AMC_64x64_white_1_6dbd1dd65f.svg",
+    "hash": "AMC_64x64_white_1_6dbd1dd65f"
+   }
+  ]
+ },
+ {
+  "mf_id": "75",
+  "mf_name": "Bajaj Finserv Mutual Fund",
+  "amc_name": "Bajaj Finserv Asset Management Limited",
+  "amc_website": "https://www.bajajamc.com",
+  "amc_schemewise_annual_report": "https://www.bajajamc.com/downloads?financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.bajajamc.com/downloads?statutory-disclosures=",
+  "amc_monthly_portfolio_disclosure": "https://www.bajajamc.com/downloads?statutory-disclosures=",
+  "amc_halfYearly_portfolio_disclosure": "https://www.bajajamc.com/downloads?statutory-disclosures=",
+  "amc_monthly_mf_factsheets": "https://www.bajajamc.com/downloads?statutory-disclosures=",
+  "amc_riskometer_monthly": "https://www.bajajamc.com/downloads?statutory-disclosure=",
+  "amc_riskometer_yearly": "https://www.bajajamc.com/downloads?statutory-disclosure=",
+  "amc_unclaimed_dividend_amt": "https://www.bajajamc.com/downloads?statutory-disclosures=",
+  "amc_unclaimed_redemption_amt": "https://www.bajajamc.com/downloads?statutory-disclosures=",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=75",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=75",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai75.pdf",
+  "scheme_wise": "https://www.bajajamc.com/downloads?financials",
+  "icon_wordmark": {
+   "url": "/uploads/Bajaj_AMC_Logo_230x60px_11_12_9121a61e90.svg",
+   "hash": "Bajaj_AMC_Logo_230x60px_11_12_9121a61e90"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc",
+  "icons": [
+   {
+    "url": "/uploads/Bajaj_AMC_Logo_64x64px_11_436bd53a58.svg",
+    "hash": "Bajaj_AMC_Logo_64x64px_11_436bd53a58"
+   }
+  ]
+ },
+ {
+  "mf_id": "48",
+  "mf_name": "Bandhan Mutual Fund",
+  "amc_name": "Bandhan AMC Limited",
+  "amc_website": "https://www.bandhanmutual.com",
+  "amc_schemewise_annual_report": "https://bandhanmutual.com/statutory-disclosures/scheme-financials/annual-financials",
+  "amc_fortnightly_portfolio_disclosure": "https://bandhanmutual.com/downloads/disclosures",
+  "amc_monthly_portfolio_disclosure": "https://bandhanmutual.com/downloads/disclosures",
+  "amc_halfYearly_portfolio_disclosure": "https://bandhanmutual.com/downloads/disclosures",
+  "amc_monthly_mf_factsheets": "https://bandhanmutual.com/downloads/factsheets",
+  "amc_riskometer_monthly": "https://bandhanmutual.com/downloads/disclosures",
+  "amc_riskometer_yearly": "https://bandhanmutual.com/downloads/other-disclosures",
+  "amc_unclaimed_dividend_amt": "https://bandhanmutual.com/",
+  "amc_unclaimed_redemption_amt": "https://bandhanmutual.com/",
+  "amc_investonline_in_mf": "https://bandhanmutual.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=48",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=48",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai48.pdf",
+  "scheme_wise": "https://bandhanmutual.com/statutory-disclosures/scheme-financials/annual-financials",
+  "icon_wordmark": {
+   "url": "/uploads/Bandhan_MF_logo_230x60_06_f7f42f644d.svg",
+   "hash": "Bandhan_MF_logo_230x60_06_f7f42f644d"
+  },
+  "amc_kyc": "https://bandhanmutual.com/investor/modify-kyc",
+  "icons": [
+   {
+    "url": "/uploads/Bandhan_MF_logo_64x64_05_adee562cbf.svg",
+    "hash": "Bandhan_MF_logo_64x64_05_adee562cbf"
+   }
+  ]
+ },
+ {
+  "mf_id": "46",
+  "mf_name": "Bank of India Mutual Fund",
+  "amc_name": "Bank of India Investment Managers Private Limited",
+  "amc_website": "https://www.boimf.in",
+  "amc_schemewise_annual_report": "https://www.boimf.in/regulatory-reports/financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.boimf.in/regulatory-reports",
+  "amc_monthly_portfolio_disclosure": "https://www.boimf.in/investor-corner#t2",
+  "amc_halfYearly_portfolio_disclosure": "https://www.boimf.in/regulatory-reports/financials",
+  "amc_monthly_mf_factsheets": "https://www.boimf.in/docs/default-source/investorcorner/factsheets/factsheet-may-2022.pdf?sfvrsn=3f2c8194_4",
+  "amc_riskometer_monthly": "https://www.boimf.in/investor-corner#t2",
+  "amc_riskometer_yearly": "https://www.boimf.in/regulatory-reports/risk-o-meter-disclosure",
+  "amc_unclaimed_dividend_amt": "https://mfs.kfintech.com/udh/udh.aspx",
+  "amc_unclaimed_redemption_amt": "https://mfs.kfintech.com/udh/udh.aspx",
+  "amc_investonline_in_mf": "https://online.boimf.in/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=46",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=46",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai46.pdf",
+  "scheme_wise": "https://www.boimf.in/regulatory-reports/financials",
+  "icon_wordmark": {
+   "url": "/uploads/BOI_logo_230_X60_1ab3c09455.svg",
+   "hash": "BOI_logo_230_X60_1ab3c09455"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc?amccode=368F10BB-3B23-49E5-9B5C-B566916312C3",
+  "icons": [
+   {
+    "url": "/uploads/BOI_Logo_64_X64_8aa4182ca0.svg",
+    "hash": "BOI_Logo_64_X64_8aa4182ca0"
+   }
+  ]
+ },
+ {
+  "mf_id": "4",
+  "mf_name": "Baroda BNP Paribas Mutual Fund",
+  "amc_name": "Baroda BNP Paribas Asset Management India Private Limited",
+  "amc_website": "https://www.barodabnpparibasmf.in/",
+  "amc_schemewise_annual_report": "https://www.barodabnpparibasmf.in/downloads/scheme-financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.barodabnpparibasmf.in/downloads/midmonth-portfolio-scheme",
+  "amc_monthly_portfolio_disclosure": "https://www.barodabnpparibasmf.in/downloads/monthly-portfolio-scheme",
+  "amc_halfYearly_portfolio_disclosure": "https://www.barodabnpparibasmf.in/downloads/scheme-financials",
+  "amc_monthly_mf_factsheets": "https://www.barodabnpparibasmf.in/downloads/monthly-factsheet",
+  "amc_riskometer_monthly": "https://www.barodabnpparibasmf.in/schemes-risko-meter",
+  "amc_riskometer_yearly": "https://www.barodabnpparibasmf.in/schemes-risko-meter",
+  "amc_unclaimed_dividend_amt": "https://www.barodabnpparibasmf.in/statutory-disclosures/unclaimed-dividend",
+  "amc_unclaimed_redemption_amt": "https://www.barodabnpparibasmf.in/statutory-disclosures/unclaimed-dividend",
+  "amc_investonline_in_mf": "https://mfs.kfintech.com/barodabnpparibasmf",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=4",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=4",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai4.pdf",
+  "scheme_wise": "https://www.barodabnpparibasmf.in/downloads/scheme-financials",
+  "icon_wordmark": {
+   "url": "/uploads/Baroda_BNP_Logo_01_ed9fd8364b.svg",
+   "hash": "Baroda_BNP_Logo_01_ed9fd8364b"
+  },
+  "amc_kyc": "https://www.barodabnpparibasmf.in/investor-centre/kyc",
+  "icons": [
+   {
+    "url": "/uploads/Baroda_BNP_Logo_01_ed9fd8364b.svg",
+    "hash": "Baroda_BNP_Logo_01_ed9fd8364b"
+   }
+  ]
+ },
+ {
+  "mf_id": "32",
+  "mf_name": "Canara Robeco Mutual Fund",
+  "amc_name": "Canara Robeco Asset Management Company Limited",
+  "amc_website": "https://www.canararobeco.com",
+  "amc_schemewise_annual_report": "https://www.canararobeco.com/documents/statutory-disclosures/annual-reports-returns/annual-report/?searchyear=2025-26",
+  "amc_fortnightly_portfolio_disclosure": "https://www.canararobeco.com/documents/statutory-disclosures/fortnightly-portfolio-disclosure-debt/",
+  "amc_monthly_portfolio_disclosure": "https://www.canararobeco.com/documents/statutory-disclosures/scheme-dashboard/scheme-monthly-portfolio/",
+  "amc_halfYearly_portfolio_disclosure": "https://www.canararobeco.com/documents/forms-downloads/forms-information-documents/information-documents/half-yearly-portfolio/",
+  "amc_monthly_mf_factsheets": "https://www.canararobeco.com/documents/forms-downloads/forms-information-documents/information-documents/factsheets/",
+  "amc_riskometer_monthly": "https://www.canararobeco.com/documents/statutory-disclosures/scheme-dashboard/scheme-monthly-portfolio/",
+  "amc_riskometer_yearly": "https://www.canararobeco.com/documents/statutory-disclosures/annual-schemewise-changes-in-risk-o-meter/",
+  "amc_unclaimed_dividend_amt": "https://www.canararobeco.com/investor/unclaimed-redemption/",
+  "amc_unclaimed_redemption_amt": "https://www.canararobeco.com/investor/unclaimed-redemption/",
+  "amc_investonline_in_mf": "https://smartinvestor.canararobeco.com/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=32",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=32",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai32.pdf",
+  "scheme_wise": "https://www.canararobeco.com/documents/statutory-disclosures/annual-reports-returns/annual-report/?searchyear=2025-26",
+  "icon_wordmark": {
+   "url": "/uploads/CR_LOGO_230x60_6fc7137f7c.svg",
+   "hash": "CR_LOGO_230x60_6fc7137f7c"
+  },
+  "amc_kyc": "https://www.canararobeco.com/investor-corner/ekyc",
+  "icons": [
+   {
+    "url": "/uploads/CR_Logo_64px_12aeb5ac0b.svg",
+    "hash": "CR_Logo_64px_12aeb5ac0b"
+   }
+  ]
+ },
+ {
+  "mf_id": "81",
+  "mf_name": "Capitalmind Mutual Fund",
+  "amc_name": "Capitalmind Asset Management Private Limited",
+  "amc_website": "https://capitalmindmf.com/",
+  "amc_schemewise_annual_report": "https://capitalmindmf.com/statutory-disclosures.html#",
+  "amc_fortnightly_portfolio_disclosure": "https://capitalmindmf.com/statutory-disclosures.html#",
+  "amc_monthly_portfolio_disclosure": "https://capitalmindmf.com/statutory-disclosures.html#",
+  "amc_halfYearly_portfolio_disclosure": "https://capitalmindmf.com/statutory-disclosures.html#",
+  "amc_monthly_mf_factsheets": "https://capitalmindmf.com/factsheet.html#",
+  "amc_riskometer_monthly": "https://capitalmindmf.com/statutory-disclosures.html#",
+  "amc_riskometer_yearly": "https://capitalmindmf.com/statutory-disclosures.html#",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "https://invest.capitalmindmf.com/?utm_source=amfi&utm_medium=website&utm_campaign=amfi_redirect",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=81",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=81",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai81.pdf",
+  "scheme_wise": "https://capitalmindmf.com/statutory-disclosures.html#",
+  "icon_wordmark": {
+   "url": "/uploads/Capitalmind_Logo_rectangle_dc614652cd.svg",
+   "hash": "Capitalmind_Logo_rectangle_dc614652cd"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/Capitalmind_Logo_Square_bf759e2153.svg",
+    "hash": "Capitalmind_Logo_Square_bf759e2153"
+   }
+  ]
+ },
+ {
+  "mf_id": "91",
+  "mf_name": "Carnelian Mutual Fund",
+  "amc_name": "Carnelian Investment Managers Private Limited",
+  "amc_website": "www.carnelianmf.com",
+  "amc_schemewise_annual_report": null,
+  "amc_fortnightly_portfolio_disclosure": "",
+  "amc_monthly_portfolio_disclosure": "",
+  "amc_halfYearly_portfolio_disclosure": "",
+  "amc_monthly_mf_factsheets": "",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=91",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=91",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai91.pdf",
+  "scheme_wise": "",
+  "icon_wordmark": null,
+  "amc_kyc": null,
+  "icons": []
+ },
+ {
+  "mf_id": "84",
+  "mf_name": "Choice Mutual Fund",
+  "amc_name": "Choice AMC Private Limited",
+  "amc_website": "https://choicemf.com/",
+  "amc_schemewise_annual_report": "https://choicemf.com/disclosures/annual-accounts",
+  "amc_fortnightly_portfolio_disclosure": "https://www.choicemf.com/disclosures/fortnight-portfolio",
+  "amc_monthly_portfolio_disclosure": "https://choicemf.com/disclosures/monthly-portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://www.choicemf.com/disclosures?category=regulatory-compliance",
+  "amc_monthly_mf_factsheets": "https://choicemf.com/disclosures/factsheets",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "https://choicemf.com/disclosures/annual-disclosure-risk-level",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "https://investor.choicemf.com/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=84",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=84",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai84.pdf",
+  "scheme_wise": "https://choicemf.com/disclosures/annual-accounts",
+  "icon_wordmark": {
+   "url": "/uploads/AMC_Logo_Choice_mutual_fund_230x60_0f567ba227.png",
+   "hash": "AMC_Logo_Choice_mutual_fund_230x60_0f567ba227"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/AMC_Logo_Choice_mutual_fund_64x64_553b04baab.png",
+    "hash": "AMC_Logo_Choice_mutual_fund_64x64_553b04baab"
+   }
+  ]
+ },
+ {
+  "mf_id": "6",
+  "mf_name": "DSP Mutual Fund",
+  "amc_name": "DSP Asset Managers Private Limited",
+  "amc_website": "https://www.dspim.com",
+  "amc_schemewise_annual_report": "https://www.dspim.com/about-us/mandatory-disclosure/annual-reports",
+  "amc_fortnightly_portfolio_disclosure": "https://www.dspim.com/mandatory-disclosures/portfolio-disclosures",
+  "amc_monthly_portfolio_disclosure": "https://www.dspim.com/about-us/mandatory-disclosure/portfolio-disclosures",
+  "amc_halfYearly_portfolio_disclosure": "https://www.dspim.com/about-us/mandatory-disclosure/portfolio-disclosures",
+  "amc_monthly_mf_factsheets": "https://www.dspim.com/downloads?category=Information%20Documents&sub_category=Factsheets",
+  "amc_riskometer_monthly": "https://www.dspim.com/mandatory-disclosures/portfolio-disclosures",
+  "amc_riskometer_yearly": "https://www.dspim.com/mandatory-disclosures/annual-risk-o-meter-disclosure",
+  "amc_unclaimed_dividend_amt": "hhttps://www.dspim.com/mandatory-disclosures/unclaimed-amount-details",
+  "amc_unclaimed_redemption_amt": "https://www.dspim.com/mandatory-disclosures/unclaimed-amount-details",
+  "amc_investonline_in_mf": "https://www.dspim.com/invest/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=6",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=6",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai6.pdf",
+  "scheme_wise": "https://www.dspim.com/about-us/mandatory-disclosure/annual-reports",
+  "icon_wordmark": {
+   "url": "/uploads/DSPMF_64_x_64_3_768ae79808.svg",
+   "hash": "DSPMF_64_x_64_3_768ae79808"
+  },
+  "amc_kyc": "https://www.dspim.com/invest/#goto=kyc",
+  "icons": [
+   {
+    "url": "/uploads/DSPMF_64_x_64_3_768ae79808.svg",
+    "hash": "DSPMF_64_x_64_3_768ae79808"
+   }
+  ]
+ },
+ {
+  "mf_id": "47",
+  "mf_name": "Edelweiss Mutual Fund",
+  "amc_name": "Edelweiss Asset Management Limited",
+  "amc_website": "https://www.edelweissmf.com",
+  "amc_schemewise_annual_report": "https://www.edelweissmf.com/statutory #Financials-and-Portfolios",
+  "amc_fortnightly_portfolio_disclosure": "https://www.edelweissmf.com/statutory#Portfolio-of-Schemes",
+  "amc_monthly_portfolio_disclosure": "https://www.edelweissmf.com/statutory#Portfolio-of-Schemes",
+  "amc_halfYearly_portfolio_disclosure": "https://www.edelweissmf.com/statutory#Financials-and-Portfolios",
+  "amc_monthly_mf_factsheets": "https://www.edelweissmf.com/downloads/factsheets",
+  "amc_riskometer_monthly": "https://www.edelweissmf.com/statutory#Risk-o-Meter",
+  "amc_riskometer_yearly": "https://www.edelweissmf.com/statutory#Risk-o-Meter",
+  "amc_unclaimed_dividend_amt": "http://www.edelweissmf.com/FooterPages/unclaimed-users-list.aspx",
+  "amc_unclaimed_redemption_amt": "http://www.edelweissmf.com/FooterPages/unclaimed-users-list.aspx",
+  "amc_investonline_in_mf": "https://online.edelweissmf.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=47",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=47",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai47.pdf",
+  "scheme_wise": "https://www.edelweissmf.com/statutory #Financials-and-Portfolios",
+  "icon_wordmark": {
+   "url": "/uploads/EAMC_Final_Logo_2025_230x60_0d5d8ce2f1.svg",
+   "hash": "EAMC_Final_Logo_2025_230x60_0d5d8ce2f1"
+  },
+  "amc_kyc": "https://www.edelweissmf.com/Files/Re-KYC/KYC_reckoner_v2_low_version.pdf",
+  "icons": [
+   {
+    "url": "/uploads/EAMC_Final_Logo_2025_64x64_ee0ce899ff.svg",
+    "hash": "EAMC_Final_Logo_2025_64x64_ee0ce899ff"
+   }
+  ]
+ },
+ {
+  "mf_id": "27",
+  "mf_name": "Franklin Templeton Mutual Fund",
+  "amc_name": "Franklin Templeton Asset Management (India) Private Limited",
+  "amc_website": "https://www.franklintempletonindia.com",
+  "amc_schemewise_annual_report": "https://www.franklintempletonindia.com/investor/reports?firstFilter-6",
+  "amc_fortnightly_portfolio_disclosure": "https://www.franklintempletonindia.com/investor/reports?firstFilter-10",
+  "amc_monthly_portfolio_disclosure": "https://www.franklintempletonindia.com/investor/reports?firstFilter-12",
+  "amc_halfYearly_portfolio_disclosure": "https://www.franklintempletonindia.com/investor/reports?firstFilter-5",
+  "amc_monthly_mf_factsheets": "https://www.franklintempletonindia.com/downloads/fund-literature",
+  "amc_riskometer_monthly": "https://www.franklintempletonindia.com/downloadsServlet/pdf/product-labels-jg9o5k7l",
+  "amc_riskometer_yearly": "https://www.franklintempletonindia.com/downloadsServlet/pdf/number-of-changes-in-risk-o-meter-during-the-fy-2021-kmhhmn8e",
+  "amc_unclaimed_dividend_amt": "https://www.camsonline.com/FT/unclaimed-dividend&redemption",
+  "amc_unclaimed_redemption_amt": "https://www.camsonline.com/FT/unclaimed-dividend&redemption",
+  "amc_investonline_in_mf": "https://www.franklintempletonindia.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=27",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=27",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai27.pdf",
+  "scheme_wise": "https://www.franklintempletonindia.com/investor/reports?firstFilter-6",
+  "icon_wordmark": {
+   "url": "/uploads/FT_230_x_60_b6da89a992.svg",
+   "hash": "FT_230_x_60_b6da89a992"
+  },
+  "amc_kyc": "https://accounts.franklintempletonindia.com/ngGuest/#/kycmodification",
+  "icons": [
+   {
+    "url": "/uploads/FT_230_x_60_b6da89a992.svg",
+    "hash": "FT_230_x_60_b6da89a992"
+   }
+  ]
+ },
+ {
+  "mf_id": "63",
+  "mf_name": "Groww Mutual Fund",
+  "amc_name": "Groww Asset Management Limited",
+  "amc_website": "https://www.growwmf.in",
+  "amc_schemewise_annual_report": "https://www.growwmf.in/financials/annual-report",
+  "amc_fortnightly_portfolio_disclosure": "https://growwmf.in/statutory-disclosure/portfolio",
+  "amc_monthly_portfolio_disclosure": "https://growwmf.in/statutory-disclosure/portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://www.growwmf.in/financials/half-yearly-unaudited",
+  "amc_monthly_mf_factsheets": "https://www.growwmf.in/downloads/fact-sheet",
+  "amc_riskometer_monthly": "https://growwmf.in/downloads/riskometer",
+  "amc_riskometer_yearly": "https://www.growwmf.in/downloads/riskometer",
+  "amc_unclaimed_dividend_amt": "https://gmf.kfintech.com/UnclaimedDividendAndRedemption",
+  "amc_unclaimed_redemption_amt": "https://gmf.kfintech.com/UnclaimedDividendAndRedemption",
+  "amc_investonline_in_mf": "https://gmf.kfintech.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=63",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=63",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai63.pdf",
+  "scheme_wise": "https://www.growwmf.in/financials/annual-report",
+  "icon_wordmark": {
+   "url": "/uploads/Light_BG_230_x_60_03824ca551.svg",
+   "hash": "Light_BG_230_x_60_03824ca551"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc?amccode=34839919-A05B-467D-B20A-A0584E8B885A",
+  "icons": [
+   {
+    "url": "/uploads/Light_BG_64_x_64_16b6f119d0.svg",
+    "hash": "Light_BG_64_x_64_16b6f119d0"
+   }
+  ]
+ },
+ {
+  "mf_id": "9",
+  "mf_name": "HDFC Mutual Fund",
+  "amc_name": "HDFC Asset Management Company Limited",
+  "amc_website": "https://www.hdfcfund.com",
+  "amc_schemewise_annual_report": "https://www.hdfcfund.com/statutory-disclosure/annual-reports",
+  "amc_fortnightly_portfolio_disclosure": "https://www.hdfcfund.com/statutory-disclosure/portfolio/fortnightly-portfolio",
+  "amc_monthly_portfolio_disclosure": "https://www.hdfcfund.com/statutory-disclosure/portfolio/monthly-portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://www.hdfcfund.com/statutory-disclosure/scheme-financials",
+  "amc_monthly_mf_factsheets": "http://hdfcfund.com/downloads/monthly-fact-sheet",
+  "amc_riskometer_monthly": "https://www.hdfcfund.com/statutory-disclosure/monthly-portfolio",
+  "amc_riskometer_yearly": "https://www.hdfcfund.com/statutory-disclosure/riskometers",
+  "amc_unclaimed_dividend_amt": "http://hdfcfund.com/investorcorner/unclaimed-redemption-dividend-details-new",
+  "amc_unclaimed_redemption_amt": "http://hdfcfund.com/investorcorner/unclaimed-redemption-dividend-details-new",
+  "amc_investonline_in_mf": "https://investor.hdfcfund.com/mfonline/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=9",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=9",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai9.pdf",
+  "scheme_wise": "https://www.hdfcfund.com/statutory-disclosure/annual-reports",
+  "icon_wordmark": {
+   "url": "/uploads/230_X_60_px_HDFC_MF_Logo_without_Bharosa_469a6f164d.svg",
+   "hash": "230_X_60_px_HDFC_MF_Logo_without_Bharosa_469a6f164d"
+  },
+  "amc_kyc": "https://investor-web.hdfcfund.com/kyc-verification?_gl=1*1wzayhw*_gcl_au*MTUyMDU1MjI2MC4xNzA3NzE5MTEz",
+  "icons": [
+   {
+    "url": "/uploads/64_X_64_px_HDFC_MF_Logo_without_Bharosa_e5f2e608f0.svg",
+    "hash": "64_X_64_px_HDFC_MF_Logo_without_Bharosa_e5f2e608f0"
+   }
+  ]
+ },
+ {
+  "mf_id": "76",
+  "mf_name": "Helios Mutual Fund",
+  "amc_name": "Helios Capital Asset Management (India) Pvt. Ltd.",
+  "amc_website": "https://www.heliosmf.in",
+  "amc_schemewise_annual_report": "https://www.heliosmf.in/wp-content/uploads/2026/07/helios-mutual-fund-annual-report-fy-2025-26.pdf",
+  "amc_fortnightly_portfolio_disclosure": "https://www.heliosmf.in/portfolio-disclosure/",
+  "amc_monthly_portfolio_disclosure": "https://www.heliosmf.in/portfolio-disclosure/",
+  "amc_halfYearly_portfolio_disclosure": "https://www.heliosmf.in/portfolio-disclosure/",
+  "amc_monthly_mf_factsheets": "https://www.heliosmf.in/downloads/",
+  "amc_riskometer_monthly": "https://www.heliosmf.in/downloads/",
+  "amc_riskometer_yearly": "https://www.heliosmf.in/wp-content/uploads/2026/04/Risk-Levels-FY-2025-26.pdf",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "https://invest.heliosmf.in/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=76",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=76",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai76.pdf",
+  "scheme_wise": "https://www.heliosmf.in/wp-content/uploads/2026/07/helios-mutual-fund-annual-report-fy-2025-26.pdf",
+  "icon_wordmark": {
+   "url": "/uploads/Helios_AMFI_logo_230x60_c19091425f.svg",
+   "hash": "Helios_AMFI_logo_230x60_c19091425f"
+  },
+  "amc_kyc": "https://camskra.com/PanDetailsUpdate.aspx",
+  "icons": [
+   {
+    "url": "/uploads/Helios_AMFI_logo_64x64_383c6cdecc.svg",
+    "hash": "Helios_AMFI_logo_64x64_383c6cdecc"
+   }
+  ]
+ },
+ {
+  "mf_id": "37",
+  "mf_name": "HSBC Mutual Fund",
+  "amc_name": "HSBC Asset Management (India) Private Ltd.",
+  "amc_website": "https://www.assetmanagement.hsbc.co.in",
+  "amc_schemewise_annual_report": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources?Date=&Cap=&Doc=scheme-annual-report",
+  "amc_fortnightly_portfolio_disclosure": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources/information-library#&accordion1446811090=9",
+  "amc_monthly_portfolio_disclosure": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources/information-library#&accordion1446811090=2",
+  "amc_halfYearly_portfolio_disclosure": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources/information-library#&accordion1446811090=3",
+  "amc_monthly_mf_factsheets": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources?Date=&Cap=&Doc=fund-factsheets#&module-17=1",
+  "amc_riskometer_monthly": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources/information-library#&accordion1446811090=1",
+  "amc_riskometer_yearly": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources?Date=&Cap=&Doc=other-disclosures#&module-17=1",
+  "amc_unclaimed_dividend_amt": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources/information-library/unclaimed-redemption",
+  "amc_unclaimed_redemption_amt": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources/information-library/unclaimed-redemption",
+  "amc_investonline_in_mf": "https://invest.assetmanagement.hsbc.co.in/auth/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=37",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=37",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai37.pdf",
+  "scheme_wise": "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources?Date=&Cap=&Doc=scheme-annual-report",
+  "icon_wordmark": {
+   "url": "/uploads/HSBC_Mutual_Fund_Logo_768x137_8ca1a3a5e8.jpg",
+   "hash": "HSBC_Mutual_Fund_Logo_768x137_8ca1a3a5e8"
+  },
+  "amc_kyc": "https://invest.assetmanagement.hsbc.co.in/home/profile/folio-details",
+  "icons": [
+   {
+    "url": "/uploads/HSBC_Mutual_Fund_Logo_768x137_8ca1a3a5e8.jpg",
+    "hash": "HSBC_Mutual_Fund_Logo_768x137_8ca1a3a5e8"
+   }
+  ]
+ },
+ {
+  "mf_id": "20",
+  "mf_name": "ICICI Prudential Mutual Fund",
+  "amc_name": "ICICI Prudential Asset Management Company Limited",
+  "amc_website": "https://www.icicipruamc.com",
+  "amc_schemewise_annual_report": "https://www.icicipruamc.com/about-us/financials-&-disclosures?currentTabFilter=SchemeFinancials&&subCatTabFilter=Audited Annual Financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.icicipruamc.com/media-center/downloads?currentTabFilter=OtherSchemeDisclosures&&subCatTabFilter=FortnightlyPortfolioDisclosures",
+  "amc_monthly_portfolio_disclosure": "https://www.icicipruamc.com/news-and-media/downloads?currentTabFilter=Disclosures&&subCatTabFilter=MonthlyPortfolioDisclosures",
+  "amc_halfYearly_portfolio_disclosure": "https://www.icicipruamc.com/news-and-media/downloads?currentTabFilter=OtherSchemeDisclosures&&subCatTabFilter=Half Yearly Portfolio Statement",
+  "amc_monthly_mf_factsheets": "https://www.icicipruamc.com/news-and-media/downloads?currentTabFilter=Historical Factsheets",
+  "amc_riskometer_monthly": "https://www.icicipruamc.com/news-and-media/downloads?currentTabFilter=OtherSchemeDisclosures&&subCatTabFilter=Monthly Portfolio Disclosures",
+  "amc_riskometer_yearly": "https://www.icicipruamc.com/news-and-media/downloads?currentTabFilter=OtherSchemeDisclosures&&subCatTabFilter=Scheme Riskometers",
+  "amc_unclaimed_dividend_amt": "https://www.camsonline.com/Investors/Service-requests/GoGreen/Unclaimed-redemption&IDCW",
+  "amc_unclaimed_redemption_amt": "https://www.camsonline.com/Investors/Service-requests/GoGreen/Unclaimed-redemption&IDCW",
+  "amc_investonline_in_mf": "https://www.icicipruamc.com/mutual-fund?fund=NFO",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=20",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=20",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai20.pdf",
+  "scheme_wise": "https://www.icicipruamc.com/about-us/financials-&-disclosures?currentTabFilter=SchemeFinancials&&subCatTabFilter=Audited Annual Financials",
+  "icon_wordmark": {
+   "url": "/uploads/icici_230x60_520d4bb639.png",
+   "hash": "icici_230x60_520d4bb639"
+  },
+  "amc_kyc": "https://www.archive.icicipruamc.com/update-pan",
+  "icons": [
+   {
+    "url": "/uploads/icici_64x64_341f3899da.png",
+    "hash": "icici_64x64_341f3899da"
+   }
+  ]
+ },
+ {
+  "mf_id": "65",
+  "mf_name": "IL&FS Mutual Fund (IDF)",
+  "amc_name": "IL&FS Infra Asset Management Limited",
+  "amc_website": "https://www.ilfsinfrafund.com",
+  "amc_schemewise_annual_report": "https://www.ilfsinfrafund.com/financials.php",
+  "amc_fortnightly_portfolio_disclosure": "http://www.ilfsinfrafund.com/other.php",
+  "amc_monthly_portfolio_disclosure": "http://www.ilfsinfrafund.com/other.php",
+  "amc_halfYearly_portfolio_disclosure": "http://ilfsinfrafund.com/other.php",
+  "amc_monthly_mf_factsheets": "",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=65",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=65",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai65.pdf",
+  "scheme_wise": "https://www.ilfsinfrafund.com/financials.php",
+  "icon_wordmark": {
+   "url": "/uploads/230_x_60_pixels_IL_and_FS_LOGO_0efe81b5a3.svg",
+   "hash": "230_x_60_pixels_IL_and_FS_LOGO_0efe81b5a3"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/64_x_64_pixels_IL_and_FS_LOGO_971ff18f91.svg",
+    "hash": "64_x_64_pixels_IL_and_FS_LOGO_971ff18f91"
+   }
+  ]
+ },
+ {
+  "mf_id": "42",
+  "mf_name": "Invesco Mutual Fund",
+  "amc_name": "Invesco Asset Management (India) Private Limited",
+  "amc_website": "https://www.invescomutualfund.com",
+  "amc_schemewise_annual_report": "https://www.invescomutualfund.com/financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.invescomutualfund.com/literature-and-form?tab=Fortnightly",
+  "amc_monthly_portfolio_disclosure": "https://invescomutualfund.com/literature-and-form?tab=Complete",
+  "amc_halfYearly_portfolio_disclosure": "https://invescomutualfund.com/literature-and-form?tab=HalfYearlyHoldings",
+  "amc_monthly_mf_factsheets": "https://invescomutualfund.com/literature-and-form?tab=Factsheets",
+  "amc_riskometer_monthly": "https://invescomutualfund.com/literature-and-form?tab=Complete",
+  "amc_riskometer_yearly": "https://invescomutualfund.com/about-us?tab=Statutory",
+  "amc_unclaimed_dividend_amt": "https://invest.invescomutualfund.com/General/UncliamedDividends.aspx",
+  "amc_unclaimed_redemption_amt": "https://invest.invescomutualfund.com/General/UncliamedDividends.aspx",
+  "amc_investonline_in_mf": "https://invest.invescomutualfund.com/investonline",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=42",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=42",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai42.pdf",
+  "scheme_wise": "https://www.invescomutualfund.com/financials",
+  "icon_wordmark": {
+   "url": "/uploads/logo_230x60_01_d17fc18023.svg",
+   "hash": "logo_230x60_01_d17fc18023"
+  },
+  "amc_kyc": "https://invescomutualfund.com/investor-education?tab=eKYC",
+  "icons": [
+   {
+    "url": "/uploads/logo_64x64_01_5b2401d46d.svg",
+    "hash": "logo_64x64_01_5b2401d46d"
+   }
+  ]
+ },
+ {
+  "mf_id": "70",
+  "mf_name": "ITI Mutual Fund",
+  "amc_name": "ITI Asset Management Limited",
+  "amc_website": "https://www.itiamc.com",
+  "amc_schemewise_annual_report": "https://www.itiamc.com/statuory-disclosure",
+  "amc_fortnightly_portfolio_disclosure": "https://www.itiamc.com/statuory-disclosure",
+  "amc_monthly_portfolio_disclosure": "https://www.itiamc.com/statuory-disclosure",
+  "amc_halfYearly_portfolio_disclosure": "https://www.itiamc.com/statuory-disclosure",
+  "amc_monthly_mf_factsheets": "https://www.itiamc.com/downloads",
+  "amc_riskometer_monthly": "https://www.itiamc.com/downloads",
+  "amc_riskometer_yearly": "https://www.itiamc.com/statuory-disclosure",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "https://investonline.itiamc.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=70",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=70",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai70.pdf",
+  "scheme_wise": "https://www.itiamc.com/statuory-disclosure",
+  "icon_wordmark": {
+   "url": "/uploads/ITI_Logo_230_x_60_d6bc894a4d.svg",
+   "hash": "ITI_Logo_230_x_60_d6bc894a4d"
+  },
+  "amc_kyc": "https://investonline.itiamc.com/#/login/kyc",
+  "icons": [
+   {
+    "url": "/uploads/ITI_Logo_64_X_64_6cfe168cbd.svg",
+    "hash": "ITI_Logo_64_X_64_6cfe168cbd"
+   }
+  ]
+ },
+ {
+  "mf_id": "82",
+  "mf_name": "Jio BlackRock Mutual Fund",
+  "amc_name": "Jio BlackRock Asset Management Private Limited",
+  "amc_website": "https://www.jioblackrockamc.com/",
+  "amc_schemewise_annual_report": "https://www.jioblackrockamc.com/statutory-disclosure/disclosures/scheme-annual-report",
+  "amc_fortnightly_portfolio_disclosure": "https://www.jioblackrockamc.com/statutory-disclosure/disclosures/fortnightly-portfolio-disclosure",
+  "amc_monthly_portfolio_disclosure": "https://www.jioblackrockamc.com/statutory-disclosure/disclosures/monthly-portfolio-disclosure",
+  "amc_halfYearly_portfolio_disclosure": "https://www.jioblackrockamc.com/statutory-disclosure/disclosures/half-yearly-portfolio-disclosure",
+  "amc_monthly_mf_factsheets": "https://www.jioblackrockamc.com/statutory-disclosure/fund-documents/factsheet",
+  "amc_riskometer_monthly": "https://www.jioblackrockamc.com/statutory-disclosure/disclosures/monthly-portfolio-disclosure",
+  "amc_riskometer_yearly": "https://www.jioblackrockamc.com/statutory-disclosure/disclosures/annual-risk-o-meter-disclosure",
+  "amc_unclaimed_dividend_amt": "https://www.jioblackrockamc.com/statutory-disclosure/disclosures/unclaimed-amount-details",
+  "amc_unclaimed_redemption_amt": "https://www.jioblackrockamc.com/statutory-disclosure/disclosures/unclaimed-amount-details",
+  "amc_investonline_in_mf": "https://www.jioblackrockamc.com/onboarding",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=82",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=82",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai82.pdf",
+  "scheme_wise": "https://www.jioblackrockamc.com/statutory-disclosure/disclosures/scheme-annual-report",
+  "icon_wordmark": {
+   "url": "/uploads/Black_Rock_230x60_Logo_d4c33dcca0.svg",
+   "hash": "Black_Rock_230x60_Logo_d4c33dcca0"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/Black_Rock_64x64_Logo_9429a25011.svg",
+    "hash": "Black_Rock_64x64_Logo_9429a25011"
+   }
+  ]
+ },
+ {
+  "mf_id": "16",
+  "mf_name": "JM Financial Mutual Fund",
+  "amc_name": "JM Financial Asset Management Limited",
+  "amc_website": "https://www.jmfinancialmf.com",
+  "amc_schemewise_annual_report": "https://www.jmfinancialmf.com/downloads/Scheme-Financials/Scheme-Annual-Report",
+  "amc_fortnightly_portfolio_disclosure": "https://www.jmfinancialmf.com/downloads/Portfolio-Disclosure",
+  "amc_monthly_portfolio_disclosure": "https://www.jmfinancialmf.com/downloads/Portfolio-Disclosure",
+  "amc_halfYearly_portfolio_disclosure": "https://www.jmfinancialmf.com/downloads/Portfolio-Disclosure/Half-Yearly-Portfolio-of-Schemes",
+  "amc_monthly_mf_factsheets": "https://www.jmfinancialmf.com/downloads/Factsheet/Factsheet",
+  "amc_riskometer_monthly": "https://www.jmfinancialmf.com/downloads/Portfolio-Disclosure",
+  "amc_riskometer_yearly": "https://www.jmfinancialmf.com/downloads/Statutory-Disclosure/Annual-Riskometer-Disclosure",
+  "amc_unclaimed_dividend_amt": "https://www.jmfinancialmf.com/NAVs/UnclaimedDividends.aspx?SubReportID=8B85EDCA-4323-4AB5-ADDB-744073AD2D56",
+  "amc_unclaimed_redemption_amt": "https://www.jmfinancialmf.com/NAVs/UnclaimedDividends.aspx?SubReportID=8B85EDCA-4323-4AB5-ADDB-744073AD2D56",
+  "amc_investonline_in_mf": "https://dit.jmfinancialmf.com/portal/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=16",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=16",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai16.pdf",
+  "scheme_wise": "https://www.jmfinancialmf.com/downloads/Scheme-Financials/Scheme-Annual-Report",
+  "icon_wordmark": {
+   "url": "/uploads/JM_AMC_Logo_1_62cf48d34c.svg",
+   "hash": "JM_AMC_Logo_1_62cf48d34c"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc?amccode=57AB0A35-31CA-4190-A184-63949AA0E299",
+  "icons": [
+   {
+    "url": "/uploads/JM_AMC_Logo_f4312722b3.svg",
+    "hash": "JM_AMC_Logo_f4312722b3"
+   }
+  ]
+ },
+ {
+  "mf_id": "17",
+  "mf_name": "Kotak Mahindra Mutual Fund",
+  "amc_name": "Kotak Mahindra Asset Management Company Limited.",
+  "amc_website": "https://www.kotakmf.com",
+  "amc_schemewise_annual_report": "https://www.kotakmf.com/Information/statutory-disclosure",
+  "amc_fortnightly_portfolio_disclosure": "https://www.kotakmf.com/Information/forms-and-downloads",
+  "amc_monthly_portfolio_disclosure": "https://www.kotakmf.com/Information/forms-and-downloads",
+  "amc_halfYearly_portfolio_disclosure": "https://www.kotakmf.com/Information/forms-and-downloads",
+  "amc_monthly_mf_factsheets": "https://www.kotakmf.com/Information/forms-and-downloads/Information",
+  "amc_riskometer_monthly": "https://www.kotakmf.com/Information/forms-and-downloads",
+  "amc_riskometer_yearly": "https://www.kotakmf.com/Information/forms-and-downloads/Risk-o-meter_Disclosure_",
+  "amc_unclaimed_dividend_amt": "https://www.kotakmf.com/Information/forms-and-downloads/Unclaimed_Amount_Withdrawal_Form/Unclaimed_Amount_Withdrawal_Form.pdf",
+  "amc_unclaimed_redemption_amt": "https://www.kotakmf.com/Information/forms-and-downloads/Unclaimed_Amount_Withdrawal_Form/Unclaimed_Amount_Withdrawal_Form.pdf",
+  "amc_investonline_in_mf": "https://www.kotakmf.com/investor/loginInvestNow",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=17",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=17",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai17.pdf",
+  "scheme_wise": "https://www.kotakmf.com/Information/statutory-disclosure",
+  "icon_wordmark": {
+   "url": "/uploads/Kotak_MF_Logo_04_83e9449cfe.svg",
+   "hash": "Kotak_MF_Logo_04_83e9449cfe"
+  },
+  "amc_kyc": "https://www.kotakmf.com/investor/user/kyc-modification",
+  "icons": [
+   {
+    "url": "/uploads/Kotak_MF_Logo_01_bfa3f48692.svg",
+    "hash": "Kotak_MF_Logo_01_bfa3f48692"
+   }
+  ]
+ },
+ {
+  "mf_id": "88",
+  "mf_name": "Lakshya Mutual Fund",
+  "amc_name": "Lakshya Asset Management Private Limited",
+  "amc_website": "www.lakshyafunds.com",
+  "amc_schemewise_annual_report": null,
+  "amc_fortnightly_portfolio_disclosure": "",
+  "amc_monthly_portfolio_disclosure": "",
+  "amc_halfYearly_portfolio_disclosure": "",
+  "amc_monthly_mf_factsheets": "",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=88",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=88",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai88.pdf",
+  "scheme_wise": "",
+  "icon_wordmark": {
+   "url": "/uploads/MF_88_10e4e3cc16.svg",
+   "hash": "MF_88_10e4e3cc16"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/MF_88_10e4e3cc16.svg",
+    "hash": "MF_88_10e4e3cc16"
+   }
+  ]
+ },
+ {
+  "mf_id": "18",
+  "mf_name": "LIC Mutual Fund",
+  "amc_name": "LIC Mutual Fund Asset Management Limited",
+  "amc_website": "https://www.licmf.com",
+  "amc_schemewise_annual_report": "https://www.licmf.com/statutory-disclosure",
+  "amc_fortnightly_portfolio_disclosure": "https://www.licmf.com/downloads/monthly-portfolio",
+  "amc_monthly_portfolio_disclosure": "https://www.licmf.com/downloads/monthly-portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://www.licmf.com/half-yearly-unaudited-portfolio",
+  "amc_monthly_mf_factsheets": "https://www.licmf.com/downloads/factsheet",
+  "amc_riskometer_monthly": "https://www.licmf.com/downloads/risk-o-meter-disclosure",
+  "amc_riskometer_yearly": "https://www.licmf.com/downloads/risk-o-meter-disclosure",
+  "amc_unclaimed_dividend_amt": "https://online.licmf.com/UnclaimedDividendAndRedemption",
+  "amc_unclaimed_redemption_amt": "https://online.licmf.com/UnclaimedDividendAndRedemption",
+  "amc_investonline_in_mf": "https://online.licmf.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=18",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=18",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai18.pdf",
+  "scheme_wise": "https://www.licmf.com/statutory-disclosure",
+  "icon_wordmark": {
+   "url": "/uploads/LIC_230_x_60_svg_d4a72ee98c.svg",
+   "hash": "LIC_230_x_60_svg_d4a72ee98c"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc?amccode=8189778C-0376-469D-8496-9C8A8B31F108",
+  "icons": [
+   {
+    "url": "/uploads/LIC_64_x_64_svg_f3a55f95e5.svg",
+    "hash": "LIC_64_x_64_svg_f3a55f95e5"
+   }
+  ]
+ },
+ {
+  "mf_id": "69",
+  "mf_name": "Mahindra Manulife Mutual Fund",
+  "amc_name": "Mahindra Manulife Investment Management Pvt Ltd",
+  "amc_website": "https://www.mahindramanulife.com",
+  "amc_schemewise_annual_report": "https://www.mahindramanulife.com/downloads#financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.mahindramanulife.com/downloads#mandatory-disclosures",
+  "amc_monthly_portfolio_disclosure": "https://www.mahindramanulife.com/downloads#mandatory-disclosures",
+  "amc_halfYearly_portfolio_disclosure": "https://www.mahindramanulife.com/downloads#financials",
+  "amc_monthly_mf_factsheets": "https://www.mahindramanulife.com/downloads#investor",
+  "amc_riskometer_monthly": "https://www.mahindramanulife.com/downloads#mandatory-disclosures",
+  "amc_riskometer_yearly": "https://www.mahindramanulife.com/downloads#mandatory-disclosures",
+  "amc_unclaimed_dividend_amt": "https://www.mahindramanulife.com/downloads#mandatory-disclosures",
+  "amc_unclaimed_redemption_amt": "https://www.mahindramanulife.com/downloads#mandatory-disclosures",
+  "amc_investonline_in_mf": "https://www.mahindramanulife.com/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=69",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=69",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai69.pdf",
+  "scheme_wise": "https://www.mahindramanulife.com/downloads#financials",
+  "icon_wordmark": {
+   "url": "/uploads/MMIMPL_Logo_230_x_60_pixels_d6d030e99d.svg",
+   "hash": "MMIMPL_Logo_230_x_60_pixels_d6d030e99d"
+  },
+  "amc_kyc": "https://www.mahindramanulife.com/kycmodification",
+  "icons": [
+   {
+    "url": "/uploads/MMIMPL_Logo_64_x_64_pixels_31526dec35.svg",
+    "hash": "MMIMPL_Logo_64_x_64_pixels_31526dec35"
+   }
+  ]
+ },
+ {
+  "mf_id": "45",
+  "mf_name": "Mirae Asset Mutual Fund",
+  "amc_name": "Mirae Asset Investment Managers (India) Pvt. Ltd",
+  "amc_website": "https://www.miraeassetmf.co.in",
+  "amc_schemewise_annual_report": "https://www.miraeassetmf.co.in/downloads/statutory-disclosure/financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.miraeassetmf.co.in/downloads/portfolio",
+  "amc_monthly_portfolio_disclosure": "https://www.miraeassetmf.co.in/downloads/portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://www.miraeassetmf.co.in/downloads/portfolio",
+  "amc_monthly_mf_factsheets": "https://www.miraeassetmf.co.in/downloads/factsheet",
+  "amc_riskometer_monthly": "https://www.miraeassetmf.co.in/downloads/portfolio",
+  "amc_riskometer_yearly": "https://www.miraeassetmf.co.in/downloads/statutory-disclosure/other-disclosure",
+  "amc_unclaimed_dividend_amt": "https://www.miraeassetmf.co.in/investor-hub/unclaimed-dividend",
+  "amc_unclaimed_redemption_amt": "https://www.miraeassetmf.co.in/investor-hub/unclaimed-redemption",
+  "amc_investonline_in_mf": "https://transact.miraeassetmf.co.in/mnwclient/Admin/Login/Login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=45",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=45",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai45.pdf",
+  "scheme_wise": "https://www.miraeassetmf.co.in/downloads/statutory-disclosure/financials",
+  "icon_wordmark": {
+   "url": "/uploads/mirae_230x60_5fe177e4f5.svg",
+   "hash": "mirae_230x60_5fe177e4f5"
+  },
+  "amc_kyc": "https://www.miraeassetmf.co.in/kyc-validation",
+  "icons": [
+   {
+    "url": "/uploads/mirae_64x64_7525dff0bf.svg",
+    "hash": "mirae_64x64_7525dff0bf"
+   }
+  ]
+ },
+ {
+  "mf_id": "89",
+  "mf_name": "Monarch Mutual Fund",
+  "amc_name": "Monarch Networth Asset Management Private Limited",
+  "amc_website": "https://monarchamc.in/",
+  "amc_schemewise_annual_report": null,
+  "amc_fortnightly_portfolio_disclosure": "",
+  "amc_monthly_portfolio_disclosure": "",
+  "amc_halfYearly_portfolio_disclosure": "",
+  "amc_monthly_mf_factsheets": "",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=89",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=89",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai89.pdf",
+  "scheme_wise": "",
+  "icon_wordmark": {
+   "url": "/uploads/MF_89_0d038deb88.svg",
+   "hash": "MF_89_0d038deb88"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/MF_89_0d038deb88.svg",
+    "hash": "MF_89_0d038deb88"
+   }
+  ]
+ },
+ {
+  "mf_id": "55",
+  "mf_name": "Motilal Oswal Mutual Fund",
+  "amc_name": "Motilal Oswal Asset Management Company Limited",
+  "amc_website": "https://www.motilaloswalmf.com",
+  "amc_schemewise_annual_report": "https://www.motilaloswalmf.com/downloads/financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.motilaloswalmf.com/downloads/scheme-portfolio-details",
+  "amc_monthly_portfolio_disclosure": "https://www.motilaloswalmf.com/downloads/scheme-portfolio-details",
+  "amc_halfYearly_portfolio_disclosure": "https://www.motilaloswalmf.com/downloads/financials",
+  "amc_monthly_mf_factsheets": "https://www.motilaloswalmf.com/downloads/factsheets",
+  "amc_riskometer_monthly": "https://www.motilaloswalmf.com/downloads/regulatory-updates",
+  "amc_riskometer_yearly": "https://www.motilaloswalmf.com/downloads/regulatory-updates",
+  "amc_unclaimed_dividend_amt": "hhttps://www.motilaloswalmf.com/unclaimed-redemptions",
+  "amc_unclaimed_redemption_amt": "https://www.motilaloswalmf.com/unclaimed-redemptions",
+  "amc_investonline_in_mf": "https://www.motilaloswalmf.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=55",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=55",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai55.pdf",
+  "scheme_wise": "https://www.motilaloswalmf.com/downloads/financials",
+  "icon_wordmark": {
+   "url": "/uploads/AMC_Logo_230x60_fd13ea915a.svg",
+   "hash": "AMC_Logo_230x60_fd13ea915a"
+  },
+  "amc_kyc": "https://www.motilaloswalmf.com/mutualfund/login?returnUrl=/profile",
+  "icons": [
+   {
+    "url": "/uploads/AMC_Logo_64x64_52256f8f48.svg",
+    "hash": "AMC_Logo_64x64_52256f8f48"
+   }
+  ]
+ },
+ {
+  "mf_id": "54",
+  "mf_name": "Navi Mutual Fund",
+  "amc_name": "Navi AMC Limited",
+  "amc_website": "https://www.navimutualfund.com/",
+  "amc_schemewise_annual_report": "https://navi.com/mutual-fund/downloads/statutory-disclosure",
+  "amc_fortnightly_portfolio_disclosure": "https://navi.com/mutual-fund/downloads/portfolio",
+  "amc_monthly_portfolio_disclosure": "https://navi.com/mutual-fund/downloads/portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://navi.com/mutual-fund/downloads/portfolio",
+  "amc_monthly_mf_factsheets": "https://navi.com/mutual-fund/downloads/factsheet",
+  "amc_riskometer_monthly": "https://navi.com/mutual-fund/downloads/statutory-disclosure",
+  "amc_riskometer_yearly": "https://navi.com/mutual-fund/downloads/statutory-disclosure",
+  "amc_unclaimed_dividend_amt": "https://navi.com/mutual-fund/downloads/statutory-disclosure",
+  "amc_unclaimed_redemption_amt": "https://navi.com/mutual-fund/downloads/statutory-disclosure",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=54",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=54",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai54.pdf",
+  "scheme_wise": "https://navi.com/mutual-fund/downloads/statutory-disclosure",
+  "icon_wordmark": {
+   "url": "/uploads/navi_AMC_logo_purple_bg_5a88bb9fbb.jpg",
+   "hash": "navi_AMC_logo_purple_bg_5a88bb9fbb"
+  },
+  "amc_kyc": "https://www.camsonline.com/Investors/Service-requests/GoGreen/Pan-updation",
+  "icons": [
+   {
+    "url": "/uploads/navi_mutual_fund_e9abf3d287.png",
+    "hash": "navi_mutual_fund_e9abf3d287"
+   }
+  ]
+ },
+ {
+  "mf_id": "21",
+  "mf_name": "Nippon India Mutual Fund",
+  "amc_name": "Nippon Life India Asset Management Limited",
+  "amc_website": "https://mf.nipponindiaim.com",
+  "amc_schemewise_annual_report": "https://mf.nipponindiaim.com/investor-service/downloads/annual-half-yearly-reports",
+  "amc_fortnightly_portfolio_disclosure": "https://mf.nipponindiaim.com/investor-service/downloads/factsheet-portfolio-and-other-disclosures",
+  "amc_monthly_portfolio_disclosure": "https://mf.nipponindiaim.com/investor-service/downloads/factsheet-portfolio-and-other-disclosures",
+  "amc_halfYearly_portfolio_disclosure": "https://mf.nipponindiaim.com/investor-service/downloads/factsheet-portfolio-and-other-disclosures",
+  "amc_monthly_mf_factsheets": "https://mf.nipponindiaim.com/investor-service/downloads/factsheet-portfolio-and-other-disclosures",
+  "amc_riskometer_monthly": "https://mf.nipponindiaim.com/investor-service/downloads/factsheet-portfolio-and-other-disclosures",
+  "amc_riskometer_yearly": "https://mf.nipponindiaim.com/InvestorServices/FactsheetsDocuments/NipponIndia-MF-Change-in-Riskometer-FY26.pdf",
+  "amc_unclaimed_dividend_amt": "https://investeasy.nipponindiaim.com/Online/UndeliverdWT/UnclaimedTracker",
+  "amc_unclaimed_redemption_amt": "https://investeasy.nipponindiaim.com/Online/UndeliverdWT/UnclaimedTracker",
+  "amc_investonline_in_mf": "https://invest.nipponindiaim.com/#/auth/landingPage",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=21",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=21",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai21.pdf",
+  "scheme_wise": "https://mf.nipponindiaim.com/investor-service/downloads/annual-half-yearly-reports",
+  "icon_wordmark": {
+   "url": "/uploads/Nippon_Spiral_02_f1f9e1584a.png",
+   "hash": "Nippon_Spiral_02_f1f9e1584a"
+  },
+  "amc_kyc": "https://investeasy.nipponindiaim.com/Emandate/KYCModification/Index",
+  "icons": [
+   {
+    "url": "/uploads/Nippon_64x64_ff4317ea03.png",
+    "hash": "Nippon_64x64_ff4317ea03"
+   }
+  ]
+ },
+ {
+  "mf_id": "73",
+  "mf_name": "NJ Mutual Fund",
+  "amc_name": "NJ Asset Management Private Limited",
+  "amc_website": "",
+  "amc_schemewise_annual_report": "https://www.njmutualfund.com/njmf-download?nme=414",
+  "amc_fortnightly_portfolio_disclosure": "https://downloads.njmutualfund.com/njmf_download.php?nme=415",
+  "amc_monthly_portfolio_disclosure": "https://downloads.njmutualfund.com/njmf_download.php?nme=127",
+  "amc_halfYearly_portfolio_disclosure": "https://downloads.njmutualfund.com/njmf_download.php?nme=132",
+  "amc_monthly_mf_factsheets": "https://downloads.njmutualfund.com/downloads.php",
+  "amc_riskometer_monthly": "https://downloads.njmutualfund.com/njmf_download.php?nme=67",
+  "amc_riskometer_yearly": "https://downloads.njmutualfund.com/njmf_download.php?nme=67",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "https://investnow.njmutualfund.com/soa/UnClaimedIDCWRED",
+  "amc_investonline_in_mf": "https://investnow.njmutualfund.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=73",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=73",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai73.pdf",
+  "scheme_wise": "https://www.njmutualfund.com/njmf-download?nme=414",
+  "icon_wordmark": {
+   "url": "/uploads/NJ_AMC_Logo_230x60_8fe253e840.svg",
+   "hash": "NJ_AMC_Logo_230x60_8fe253e840"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc?amccode=94C2C035-EC26-4D02-A228-4C7CFA1DE6BC",
+  "icons": [
+   {
+    "url": "/uploads/NJ_AMC_Logo_64x64_2a9cce8071.svg",
+    "hash": "NJ_AMC_Logo_64x64_2a9cce8071"
+   }
+  ]
+ },
+ {
+  "mf_id": "90",
+  "mf_name": "Nuvama Mutual Fund",
+  "amc_name": "Nuvama Asset Management Limited",
+  "amc_website": "https://nuvamamutualfund.com/",
+  "amc_schemewise_annual_report": null,
+  "amc_fortnightly_portfolio_disclosure": "",
+  "amc_monthly_portfolio_disclosure": "",
+  "amc_halfYearly_portfolio_disclosure": "",
+  "amc_monthly_mf_factsheets": "",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=90",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=90",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai90.pdf",
+  "scheme_wise": "",
+  "icon_wordmark": null,
+  "amc_kyc": null,
+  "icons": []
+ },
+ {
+  "mf_id": "78",
+  "mf_name": "Old Bridge Mutual Fund",
+  "amc_name": "Old Bridge Asset Management Private Limited",
+  "amc_website": "https://www.oldbridgemf.com",
+  "amc_schemewise_annual_report": "https://oldbridgemf.com/uploads/20260625005_Old_Bridge_2025_2026_ANNUAL_REPORT_65e3cab574.pdf",
+  "amc_fortnightly_portfolio_disclosure": "",
+  "amc_monthly_portfolio_disclosure": "https://oldbridgemf.com/statutory-disclosures.html#v-pills-tabContent2",
+  "amc_halfYearly_portfolio_disclosure": "https://oldbridgemf.com/statutory-disclosures.html#",
+  "amc_monthly_mf_factsheets": "https://oldbridgemf.com/uploads/OLD_BRIDGE_MF_Factsheet_11305a79bc.pdf",
+  "amc_riskometer_monthly": "https://oldbridgemf.com/uploads/Risk_o_meter_Monthly_July_31_2026_08b418380c.pdf",
+  "amc_riskometer_yearly": "https://oldbridgemf.com/uploads/Disclosure_of_Risk_o_meter_for_the_year_ended_March_31_2026_7a16dcc991.pdf",
+  "amc_unclaimed_dividend_amt": "https://www.oldbridgemf.com/uploads/Process_for_Unclaimed_Redemption_and_Dividend_4e181a6126.docx",
+  "amc_unclaimed_redemption_amt": "https://www.oldbridgemf.com/uploads/Process_for_Unclaimed_Redemption_and_Dividend_4e181a6126.docx",
+  "amc_investonline_in_mf": "https://investor.oldbridgemf.com/InvestorOnline",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=78",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=78",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai78.pdf",
+  "scheme_wise": "https://oldbridgemf.com/uploads/20260625005_Old_Bridge_2025_2026_ANNUAL_REPORT_65e3cab574.pdf",
+  "icon_wordmark": {
+   "url": "/uploads/Old_Bridge_Logo_230_X_60_e190924c3a.jpg",
+   "hash": "Old_Bridge_Logo_230_X_60_e190924c3a"
+  },
+  "amc_kyc": "https://oldbridgemf.com/",
+  "icons": [
+   {
+    "url": "/uploads/Old_Bridge_Logo_64_X_64_c231b13b0d.jpg",
+    "hash": "Old_Bridge_Logo_64_X_64_c231b13b0d"
+   }
+  ]
+ },
+ {
+  "mf_id": "58",
+  "mf_name": "PGIM India Mutual Fund",
+  "amc_name": "PGIM India Asset Management Private Limite",
+  "amc_website": "www.pgimindia.com/mutual-funds",
+  "amc_schemewise_annual_report": "https://www.pgimindia.com/mutual-funds/disclosures/Financial-Statements/Scheme-Financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.pgimindia.com/mutual-funds/disclosures/Portfolios/Fortnightly-portfolio",
+  "amc_monthly_portfolio_disclosure": "https://www.pgimindia.com/mutual-funds/disclosures/Portfolios/Monthly-Portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://www.pgimindia.com/mutual-funds/disclosures/Financial-Statements/Scheme-Financials",
+  "amc_monthly_mf_factsheets": "https://www.pgimindia.com/mutual-funds/forms-and-updates/Fund-Factsheet",
+  "amc_riskometer_monthly": "https://www.pgimindia.com/mutual-funds/disclosures/Addenda-Notices/Addenda-Notices",
+  "amc_riskometer_yearly": "https://www.pgimindia.com/mutual-funds/disclosures/Other-Disclosures/Fund/Risk-o-Meter",
+  "amc_unclaimed_dividend_amt": "https://www.pgimindia.com/mutual-funds/unclaimed",
+  "amc_unclaimed_redemption_amt": "https://www.pgimindia.com/mutual-funds/unclaimed",
+  "amc_investonline_in_mf": "https://investors.pgimindiamf.com/auth/quick-invest",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=58",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=58",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai58.pdf",
+  "scheme_wise": "https://www.pgimindia.com/mutual-funds/disclosures/Financial-Statements/Scheme-Financials",
+  "icon_wordmark": {
+   "url": "/uploads/PGIM_AMC_Logo_colour_42a6b47b93.svg",
+   "hash": "PGIM_AMC_Logo_colour_42a6b47b93"
+  },
+  "amc_kyc": "https://investors.pgimindiamf.com/auth/nct-login/KYC",
+  "icons": [
+   {
+    "url": "/uploads/PGIM_AMC_Logo_colour_42a6b47b93.svg",
+    "hash": "PGIM_AMC_Logo_colour_42a6b47b93"
+   }
+  ]
+ },
+ {
+  "mf_id": "64",
+  "mf_name": "PPFAS Mutual Fund",
+  "amc_name": "PPFAS Asset Management Pvt. Ltd.",
+  "amc_website": "https://amc.ppfas.com",
+  "amc_schemewise_annual_report": "https://amc.ppfas.com/schemes/scheme-annual-report/",
+  "amc_fortnightly_portfolio_disclosure": "https://amc.ppfas.com/downloads/portfolio-disclosure/fortnightly-debt-portfolio-disclosure/",
+  "amc_monthly_portfolio_disclosure": "https://amc.ppfas.com/downloads/portfolio-disclosure/",
+  "amc_halfYearly_portfolio_disclosure": "https://amc.ppfas.com/schemes/scheme-s-financial-half-yearly/",
+  "amc_monthly_mf_factsheets": "http://amc.ppfas.com/schemes/factsheet/index.php#axzz4I2KR6um7",
+  "amc_riskometer_monthly": "https://amc.ppfas.com/statutory-disclosures/product-labelling/",
+  "amc_riskometer_yearly": "https://amc.ppfas.com/statutory-disclosures/product-labelling/",
+  "amc_unclaimed_dividend_amt": "http://amc.ppfas.com/investor-desk/unclaimed-redemption-processing/index.php#axzz4HYy49hqr",
+  "amc_unclaimed_redemption_amt": "http://amc.ppfas.com/investor-desk/unclaimed-redemption-processing/index.php#axzz4HYy49hqr",
+  "amc_investonline_in_mf": "https://amc.ppfas.com/new-investor/?",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=64",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=64",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai64.pdf",
+  "scheme_wise": "https://amc.ppfas.com/schemes/scheme-annual-report/",
+  "icon_wordmark": {
+   "url": "/uploads/PPFAS_Mutual_Fund_Logo_230x60px_f30166be07.png",
+   "hash": "PPFAS_Mutual_Fund_Logo_230x60px_f30166be07"
+  },
+  "amc_kyc": "https://selfinvest.ppfas.com/re-kyc",
+  "icons": [
+   {
+    "url": "/uploads/PPFAS_Mutual_Fund_Logo_64x64px_06a477542c.png",
+    "hash": "PPFAS_Mutual_Fund_Logo_64x64px_06a477542c"
+   }
+  ]
+ },
+ {
+  "mf_id": "13",
+  "mf_name": "quant Mutual Fund",
+  "amc_name": "quant Money Managers Limited",
+  "amc_website": "https://www.quantmutual.com",
+  "amc_schemewise_annual_report": "https://quantmutual.com/Admin/disclouser/qmf_Annual_Report_Year-2025-26.pdf",
+  "amc_fortnightly_portfolio_disclosure": "https://quantmutual.com/statutory-disclosures",
+  "amc_monthly_portfolio_disclosure": "https://quantmutual.com/statutory-disclosures",
+  "amc_halfYearly_portfolio_disclosure": "https://quantmutual.com/statutory-disclosures",
+  "amc_monthly_mf_factsheets": "https://quantmutual.com/downloads/factsheet",
+  "amc_riskometer_monthly": "https://quantmutual.com/statutory-disclosures",
+  "amc_riskometer_yearly": "https://quantmutual.com/statutory-disclosures",
+  "amc_unclaimed_dividend_amt": "https://quantmutual.com/statutory-disclosures",
+  "amc_unclaimed_redemption_amt": "https://quantmutual.com/statutory-disclosures",
+  "amc_investonline_in_mf": "https://invest.quantmutualfund.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=13",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=13",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai13.pdf",
+  "scheme_wise": "https://quantmutual.com/Admin/disclouser/qmf_Annual_Report_Year-2025-26.pdf",
+  "icon_wordmark": {
+   "url": "/uploads/230_X60_Pix_02ec8969d3.svg",
+   "hash": "230_X60_Pix_02ec8969d3"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc?amccode=375E9790-FFF2-4C37-B7FE-65D36CA729FD",
+  "icons": [
+   {
+    "url": "/uploads/64_X64_Pix_5ce888b399.svg",
+    "hash": "64_X64_Pix_5ce888b399"
+   }
+  ]
+ },
+ {
+  "mf_id": "41",
+  "mf_name": "Quantum Mutual Fund",
+  "amc_name": "Quantum Asset Management Company Private Limited",
+  "amc_website": "https://www.QuantumAMC.com",
+  "amc_schemewise_annual_report": "https://www.quantumamc.com/regulatory-document/Quantum-Mutual-Fund---Annual-Reports/2186",
+  "amc_fortnightly_portfolio_disclosure": "https://www.quantumamc.com/portfolio/combined/-1/1/0/0",
+  "amc_monthly_portfolio_disclosure": "https://www.quantumamc.com/FileCDN/FactSheet/5f6c4b6e-5264-472c-b378-d54727d45369.xlsx",
+  "amc_halfYearly_portfolio_disclosure": "https://www.quantumamc.com/regulatory-document/quantum-mutual-fund-half-yearly-portfolio-statement/1955",
+  "amc_monthly_mf_factsheets": "https://www.quantumamc.com/factsheets/combined/-1/0/0",
+  "amc_riskometer_monthly": "https://www.quantumamc.com/downloads/pdfs/product-label.pdf",
+  "amc_riskometer_yearly": "https://www.quantumamc.com/downloads/pdfs/Risk-Level-of-the-Schemes.pdf",
+  "amc_unclaimed_dividend_amt": "https://invest.quantumamc.com/Invonline/Unclaimed/UnClaimedDividend",
+  "amc_unclaimed_redemption_amt": "https://invest.quantumamc.com/Invonline/Unclaimed/UnClaimedDividend",
+  "amc_investonline_in_mf": "https://secure.quantumamc.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=41",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=41",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai41.pdf",
+  "scheme_wise": "https://www.quantumamc.com/regulatory-document/Quantum-Mutual-Fund---Annual-Reports/2186",
+  "icon_wordmark": {
+   "url": "/uploads/Quantum_Logo_230x60px_68208dc955.svg",
+   "hash": "Quantum_Logo_230x60px_68208dc955"
+  },
+  "amc_kyc": "https://www.quantumamc.com/",
+  "icons": [
+   {
+    "url": "/uploads/Quantum_Logo_64x64px_9438d04f60.svg",
+    "hash": "Quantum_Logo_64x64px_9438d04f60"
+   }
+  ]
+ },
+ {
+  "mf_id": "74",
+  "mf_name": "Samco Mutual Fund",
+  "amc_name": "Samco Asset Management Private Limited",
+  "amc_website": "https://www.samcomf.com",
+  "amc_schemewise_annual_report": "https://www.samcomf.com/StatutoryDisclosure#scheme-financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.samcomf.com/StatutoryDisclosure",
+  "amc_monthly_portfolio_disclosure": "https://www.samcomf.com/StatutoryDisclosure",
+  "amc_halfYearly_portfolio_disclosure": "https://www.samcomf.com/StatutoryDisclosure",
+  "amc_monthly_mf_factsheets": "https://www.samcomf.com/downloads",
+  "amc_riskometer_monthly": "https://www.samcomf.com/StatutoryDisclosure",
+  "amc_riskometer_yearly": "https://www.samcomf.com/StatutoryDisclosure",
+  "amc_unclaimed_dividend_amt": "https://www.samcomf.com/unclaimed-redemption-dividend",
+  "amc_unclaimed_redemption_amt": "https://www.samcomf.com/unclaimed-redemption-dividend",
+  "amc_investonline_in_mf": "https://www.samcomf.com/investor/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=74",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=74",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai74.pdf",
+  "scheme_wise": "https://www.samcomf.com/StatutoryDisclosure#scheme-financials",
+  "icon_wordmark": {
+   "url": "/uploads/Samco_MF_Logo_Cutting_Edge_Systems_09c5593bd1.svg",
+   "hash": "Samco_MF_Logo_Cutting_Edge_Systems_09c5593bd1"
+  },
+  "amc_kyc": "http://samcomf.com/kyc",
+  "icons": [
+   {
+    "url": "/uploads/Samco_MF_Logo_Icon_ff0b72d387.svg",
+    "hash": "Samco_MF_Logo_Icon_ff0b72d387"
+   }
+  ]
+ },
+ {
+  "mf_id": "22",
+  "mf_name": "SBI Mutual Fund",
+  "amc_name": "SBI Funds Management Limited",
+  "amc_website": "https://www.sbimf.com",
+  "amc_schemewise_annual_report": "https://www.sbimf.com/en-us/about-us/financial-reports",
+  "amc_fortnightly_portfolio_disclosure": "https://www.sbimf.com/portfolios",
+  "amc_monthly_portfolio_disclosure": "https://www.sbimf.com/portfolios",
+  "amc_halfYearly_portfolio_disclosure": "https://www.sbimf.com/portfolios",
+  "amc_monthly_mf_factsheets": "https://www.sbimf.com/en-us/factsheets",
+  "amc_riskometer_monthly": "https://www.sbimf.com/en-us/portfolios",
+  "amc_riskometer_yearly": "https://www.sbimf.com/en-us/disclosure",
+  "amc_unclaimed_dividend_amt": "https://www.sbimf.com/en-us/investor-corner/investor-services/unclaimed-dividend-and-redemption-amount",
+  "amc_unclaimed_redemption_amt": "https://www.sbimf.com/en-us/investor-corner/investor-services/unclaimed-dividend-and-redemption-amount",
+  "amc_investonline_in_mf": "https://www.sbimf.com/en-us/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=22",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=22",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai22.pdf",
+  "scheme_wise": "https://www.sbimf.com/en-us/about-us/financial-reports",
+  "icon_wordmark": {
+   "url": "/uploads/SBIMF_Logo_230x60_9609972013.svg",
+   "hash": "SBIMF_Logo_230x60_9609972013"
+  },
+  "amc_kyc": "https://online.sbimf.com/update-details/modify-kyc",
+  "icons": [
+   {
+    "url": "/uploads/SBIMF_Tree_Logo_64x64_a57ab888e5.svg",
+    "hash": "SBIMF_Tree_Logo_64x64_a57ab888e5"
+   }
+  ]
+ },
+ {
+  "mf_id": "67",
+  "mf_name": "Shriram Mutual Fund",
+  "amc_name": "Shriram Asset Management Co. Ltd.",
+  "amc_website": "https://www.shriramamc.in",
+  "amc_schemewise_annual_report": "https://www.shriramamc.in/investor-statutory-disclosures#annual-accounts",
+  "amc_fortnightly_portfolio_disclosure": "https://www.shriramamc.in/investor-statutory-disclosures",
+  "amc_monthly_portfolio_disclosure": "https://www.shriramamc.in/investor-statutory-disclosures",
+  "amc_halfYearly_portfolio_disclosure": "https://www.shriramamc.in/investor-statutory-disclosures",
+  "amc_monthly_mf_factsheets": "https://www.shriramamc.in/factsheet",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "https://www.shriramamc.in/investor-statutory-disclosures",
+  "amc_unclaimed_redemption_amt": "https://www.shriramamc.in/investor-statutory-disclosures",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=67",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=67",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai67.pdf",
+  "scheme_wise": "https://www.shriramamc.in/investor-statutory-disclosures#annual-accounts",
+  "icon_wordmark": {
+   "url": "/uploads/Shriram_AMC_Logo_230x60_pixel_c20a52c21a.svg",
+   "hash": "Shriram_AMC_Logo_230x60_pixel_c20a52c21a"
+  },
+  "amc_kyc": "https://kyc.shriramamc.in",
+  "icons": [
+   {
+    "url": "/uploads/Shriram_AMC_Logo_64x64_pixel_89e720203c.svg",
+    "hash": "Shriram_AMC_Logo_64x64_pixel_89e720203c"
+   }
+  ]
+ },
+ {
+  "mf_id": "33",
+  "mf_name": "Sundaram Mutual Fund",
+  "amc_name": "Sundaram Asset Management Company Ltd",
+  "amc_website": "https://www.sundarammutual.com",
+  "amc_schemewise_annual_report": "https://www.sundarammutual.com/Scheme-Wise-Annual-Report",
+  "amc_fortnightly_portfolio_disclosure": "https://www.sundarammutual.com/Monthly-Fortnightly-Adhoc-Portfolios",
+  "amc_monthly_portfolio_disclosure": "https://www.sundarammutual.com/Monthly-Fortnightly-Adhoc-Portfolios",
+  "amc_halfYearly_portfolio_disclosure": "https://www.sundarammutual.com/Halfyearly-Portfolio-Disclosure",
+  "amc_monthly_mf_factsheets": "https://www.sundarammutual.com/Fundwise-Factsheet",
+  "amc_riskometer_monthly": "https://www.sundarammutual.com/Risk-o-meter",
+  "amc_riskometer_yearly": "https://www.sundarammutual.com/Yearly-Riskometer",
+  "amc_unclaimed_dividend_amt": "https://mfs.kfintech.com/mfs/sundaram_unclaimed.aspx",
+  "amc_unclaimed_redemption_amt": "https://mfs.kfintech.com/mfs/sundaram_unclaimed.aspx",
+  "amc_investonline_in_mf": "https://invest.sundarammutual.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=33",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=33",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai33.pdf",
+  "scheme_wise": "https://www.sundarammutual.com/Scheme-Wise-Annual-Report",
+  "icon_wordmark": {
+   "url": "/uploads/Sundaram_Mutual_Logo_Size_230_60_Pixels_01_d000960e04.svg",
+   "hash": "Sundaram_Mutual_Logo_Size_230_60_Pixels_01_d000960e04"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc",
+  "icons": [
+   {
+    "url": "/uploads/Sundaram_Mutual_Square_Logo_Size_64_64_Pixels_01_36e4fbd8f1.svg",
+    "hash": "Sundaram_Mutual_Square_Logo_Size_64_64_Pixels_01_36e4fbd8f1"
+   }
+  ]
+ },
+ {
+  "mf_id": "25",
+  "mf_name": "Tata Mutual Fund",
+  "amc_name": "Tata Asset Management Limited",
+  "amc_website": "https://www.tatamutualfund.com",
+  "amc_schemewise_annual_report": "https://www.tatamutualfund.com/about-us",
+  "amc_fortnightly_portfolio_disclosure": "https://www.tatamutualfund.com/schemes-related",
+  "amc_monthly_portfolio_disclosure": "https://www.tatamutualfund.com/schemes-related",
+  "amc_halfYearly_portfolio_disclosure": "https://www.tatamutualfund.com/about-us",
+  "amc_monthly_mf_factsheets": "https://www.tatamutualfund.com/information-documents",
+  "amc_riskometer_monthly": "https://www.tatamutualfund.com/schemes-related/portfolio",
+  "amc_riskometer_yearly": "https://www.tatamutualfund.com/statutory-disclosures/other-statutory-disclosures",
+  "amc_unclaimed_dividend_amt": "https://www.tatamutualfund.com/unclaimed-redemption",
+  "amc_unclaimed_redemption_amt": "https://www.tatamutualfund.com/unclaimed-redemption",
+  "amc_investonline_in_mf": "https://online.tatamutualfund.com/mf/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=25",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=25",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai25.pdf",
+  "scheme_wise": "https://www.tatamutualfund.com/about-us",
+  "icon_wordmark": {
+   "url": "/uploads/TMF_Logo_230_x_60_SVG_3a1923ccf3.svg",
+   "hash": "TMF_Logo_230_x_60_SVG_3a1923ccf3"
+  },
+  "amc_kyc": "https://online.tatamutualfund.com/transactions/modify-kyc/select-folio",
+  "icons": [
+   {
+    "url": "/uploads/TMF_Logo_64_X_64_SVG_41bdee868b.svg",
+    "hash": "TMF_Logo_64_X_64_SVG_41bdee868b"
+   }
+  ]
+ },
+ {
+  "mf_id": "26",
+  "mf_name": "Taurus Mutual Fund",
+  "amc_name": "Taurus Asset Management Company Limited",
+  "amc_website": "https://www.taurusmutualfund.com",
+  "amc_schemewise_annual_report": "https://taurusmutualfund.com/financials/scheme-wise-balance-sheet",
+  "amc_fortnightly_portfolio_disclosure": "",
+  "amc_monthly_portfolio_disclosure": "https://taurusmutualfund.com/monthly-portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://www.taurusmutualfund.com/financials/portfolio",
+  "amc_monthly_mf_factsheets": "https://www.taurusmutualfund.com/factsheet",
+  "amc_riskometer_monthly": "",
+  "amc_riskometer_yearly": "",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=26",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=26",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai26.pdf",
+  "scheme_wise": "https://taurusmutualfund.com/financials/scheme-wise-balance-sheet",
+  "icon_wordmark": {
+   "url": "/uploads/Taurus_Logo_with_Trademark_af874ba545.svg",
+   "hash": "Taurus_Logo_with_Trademark_af874ba545"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc?amccode=B5D3DAB5-DE89-4A20-981C-80D9E42F31B1",
+  "icons": [
+   {
+    "url": "/uploads/Taurus_Logo_Trademark_64_X_64_4b0d027c24.svg",
+    "hash": "Taurus_Logo_Trademark_64_X_64_4b0d027c24"
+   }
+  ]
+ },
+ {
+  "mf_id": "72",
+  "mf_name": "Trust Mutual Fund",
+  "amc_name": "Trust Asset Management Private Limited",
+  "amc_website": "https://www.trustmf.com",
+  "amc_schemewise_annual_report": "https://www.trustmf.com/disclosures?activeTab=financials",
+  "amc_fortnightly_portfolio_disclosure": "https://www.trustmf.com/disclosures?activeTab=portfolio-disclosures",
+  "amc_monthly_portfolio_disclosure": "https://www.trustmf.com/disclosures?activeTab=portfolio-disclosures",
+  "amc_halfYearly_portfolio_disclosure": "https://www.trustmf.com/disclosures?activeTab=portfolio-disclosures",
+  "amc_monthly_mf_factsheets": "https://www.trustmf.com/downloads?activeTab=factsheets",
+  "amc_riskometer_monthly": "https://www.trustmf.com/disclosures?activeTab=other-disclosures",
+  "amc_riskometer_yearly": "https://www.trustmf.com/disclosures?activeTab=other-disclosures",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "https://online.trustmf.com/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=72",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=72",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai72.pdf",
+  "scheme_wise": "https://www.trustmf.com/disclosures?activeTab=financials",
+  "icon_wordmark": {
+   "url": "/uploads/Trust_MF_Logo_230_X_60_pix_04_5f88df4916.svg",
+   "hash": "Trust_MF_Logo_230_X_60_pix_04_5f88df4916"
+  },
+  "amc_kyc": "https://mfs.kfintech.com/investor/general/validatekyc?amccode=0D1E5B49-0407-416A-940A-84ADDDB13742",
+  "icons": [
+   {
+    "url": "/uploads/Trust_MF_Logo_64_X_64_Pix_03_d9f2cdc6a8.svg",
+    "hash": "Trust_MF_Logo_64_X_64_Pix_03_d9f2cdc6a8"
+   }
+  ]
+ },
+ {
+  "mf_id": "79",
+  "mf_name": "Unifi Mutual Fund",
+  "amc_name": "Unifi Asset Management Private Limited",
+  "amc_website": "https://unifimf.com",
+  "amc_schemewise_annual_report": "https://unifimf.com/statutorydocuments/#scheme-annual-report",
+  "amc_fortnightly_portfolio_disclosure": "https://unifimf.com/statutorydocuments/#fortnightly-portfolio-disclosure",
+  "amc_monthly_portfolio_disclosure": "https://unifimf.com/statutorydocuments/#monthly-portfolio-disclosure",
+  "amc_halfYearly_portfolio_disclosure": "https://unifimf.com/statutorydocuments/#half-yearly-portfolio-disclosure",
+  "amc_monthly_mf_factsheets": "https://unifimf.com/factsheet/",
+  "amc_riskometer_monthly": "https://unifimf.com/statutorydocuments/",
+  "amc_riskometer_yearly": "https://unifimf.com/statutorydocuments/",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "https://www.camsonline.com/Investors/Service-requests/GoGreen/Unclaimed-redemption&IDCW",
+  "amc_investonline_in_mf": "https://invest.unifimf.com/newfolio",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=79",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=79",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai79.pdf",
+  "scheme_wise": "https://unifimf.com/statutorydocuments/#scheme-annual-report",
+  "icon_wordmark": {
+   "url": "/uploads/Unifi_MF_Logo_Rectangle_47ded58f0c.svg",
+   "hash": "Unifi_MF_Logo_Rectangle_47ded58f0c"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/Unifi_MF_Logo_Square_05e78a34ed.svg",
+    "hash": "Unifi_MF_Logo_Square_05e78a34ed"
+   }
+  ]
+ },
+ {
+  "mf_id": "61",
+  "mf_name": "Union Mutual Fund",
+  "amc_name": "Union Asset Management Company Private Limited",
+  "amc_website": "https://www.unionmf.com",
+  "amc_schemewise_annual_report": "https://www.unionmf.com/about-us/downloads/annual-reports",
+  "amc_fortnightly_portfolio_disclosure": "https://unionmf.com/about-us/downloads/fortnightly-portfolio",
+  "amc_monthly_portfolio_disclosure": "https://unionmf.com/about-us/downloads/monthly-portfolio",
+  "amc_halfYearly_portfolio_disclosure": "https://unionmf.com/about-us/downloads/financials",
+  "amc_monthly_mf_factsheets": "https://unionmf.com/about-us/downloads/factsheets",
+  "amc_riskometer_monthly": "https://unionmf.com/about-us/downloads/monthly-portfolio",
+  "amc_riskometer_yearly": "https://bit.ly/3UeB8ah",
+  "amc_unclaimed_dividend_amt": "https://unionmf.com/unclaimed-amount-status",
+  "amc_unclaimed_redemption_amt": "https://unionmf.com/unclaimed-amount-status",
+  "amc_investonline_in_mf": "https://www.unionmf.com/investor-hub",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=61",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=61",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai61.pdf",
+  "scheme_wise": "https://www.unionmf.com/about-us/downloads/annual-reports",
+  "icon_wordmark": {
+   "url": "/uploads/AMC_Logo_230_X60_4277f98897.svg",
+   "hash": "AMC_Logo_230_X60_4277f98897"
+  },
+  "amc_kyc": "https://unionmf.com/Investorlogin/UMFEKYC_KYC.aspx",
+  "icons": [
+   {
+    "url": "/uploads/AMC_Logo_230_X60_4277f98897.svg",
+    "hash": "AMC_Logo_230_X60_4277f98897"
+   }
+  ]
+ },
+ {
+  "mf_id": "28",
+  "mf_name": "UTI Mutual Fund",
+  "amc_name": "UTI Asset Mgmt. Co. Ltd.",
+  "amc_website": "https://www.utimf.com",
+  "amc_schemewise_annual_report": "https://www.utimf.com/downloads/scheme-financial",
+  "amc_fortnightly_portfolio_disclosure": "https://www.utimf.com/downloads/consolidate-debt-portfolio-disclosure",
+  "amc_monthly_portfolio_disclosure": "https://www.utimf.com/downloads/consolidate-all-portfolio-disclosure",
+  "amc_halfYearly_portfolio_disclosure": "https://www.utimf.com/downloads/consolidate-all-portfolio-disclosure",
+  "amc_monthly_mf_factsheets": "https://www.utimf.com/downloads/fact-sheet",
+  "amc_riskometer_monthly": "https://www.utimf.com/downloads/consolidate-all-portfolio-disclosure",
+  "amc_riskometer_yearly": "https://www.utimf.com/statutory-disclosures/annual-disclosure-riskometer",
+  "amc_unclaimed_dividend_amt": "https://mfs.kfintech.com/udh/udh.aspx",
+  "amc_unclaimed_redemption_amt": "https://mfs.kfintech.com/udh/udh.aspx",
+  "amc_investonline_in_mf": "https://www.utimf.com/authentication/login",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=28",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=28",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai28.pdf",
+  "scheme_wise": "https://www.utimf.com/downloads/scheme-financial",
+  "icon_wordmark": {
+   "url": "/uploads/230x60_a31f46d5d9.svg",
+   "hash": "230x60_a31f46d5d9"
+  },
+  "amc_kyc": "https://www.utimf.com/investor-services/digital-kyc",
+  "icons": [
+   {
+    "url": "/uploads/64x64_16e2eae610.svg",
+    "hash": "64x64_16e2eae610"
+   }
+  ]
+ },
+ {
+  "mf_id": "83",
+  "mf_name": "The Wealth Company Mutual Fund",
+  "amc_name": "Wealth Company Asset Management Holdings Private Limited",
+  "amc_website": "https://www.wealthcompanyamc.in",
+  "amc_schemewise_annual_report": "https://www.wealthcompanyamc.in/literature-forms/?tab=statutory-disclosures",
+  "amc_fortnightly_portfolio_disclosure": "https://www.wealthcompanyamc.in/literature-forms/portfolio-documents/fortnightly/",
+  "amc_monthly_portfolio_disclosure": "https://www.wealthcompanyamc.in/literature-forms/portfolio-documents/monthly/",
+  "amc_halfYearly_portfolio_disclosure": "https://www.wealthcompanyamc.in/literature-forms/portfolio-documents/half-yearly/",
+  "amc_monthly_mf_factsheets": "https://www.wealthcompanyamc.in/literature-forms/scheme-documents/factsheets/",
+  "amc_riskometer_monthly": "https://www.wealthcompanyamc.in/literature-forms/statutory-disclosures/addendum-and-notices/",
+  "amc_riskometer_yearly": "https://www.wealthcompanyamc.in/literature-forms/?tab=statutory-disclosures",
+  "amc_unclaimed_dividend_amt": "https://mfs.kfintech.com/udh/udh.aspx",
+  "amc_unclaimed_redemption_amt": "https://mfs.kfintech.com/udh/udh.aspx",
+  "amc_investonline_in_mf": "https://invest.wealthcompanyamc.in/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=83",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=83",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai83.pdf",
+  "scheme_wise": "https://www.wealthcompanyamc.in/literature-forms/?tab=statutory-disclosures",
+  "icon_wordmark": {
+   "url": "/uploads/AMC_Logo_the_wealth_company_mutual_fund_230x60_3be5093759.png",
+   "hash": "AMC_Logo_the_wealth_company_mutual_fund_230x60_3be5093759"
+  },
+  "amc_kyc": null,
+  "icons": [
+   {
+    "url": "/uploads/AMC_Logo_the_wealth_company_mutual_fund_64x64_b2c35bc102.png",
+    "hash": "AMC_Logo_the_wealth_company_mutual_fund_64x64_b2c35bc102"
+   }
+  ]
+ },
+ {
+  "mf_id": "71",
+  "mf_name": "WhiteOak Capital Mutual Fund",
+  "amc_name": "WhiteOak Capital Asset Management Limited",
+  "amc_website": "https://mf.whiteoakamc.com/",
+  "amc_schemewise_annual_report": "https://mf.whiteoakamc.com/regulatory-disclosures?query=mutual_fund_financials",
+  "amc_fortnightly_portfolio_disclosure": "https://mf.whiteoakamc.com/regulatory-disclosures/scheme-portfolios",
+  "amc_monthly_portfolio_disclosure": "https://mf.whiteoakamc.com/regulatory-disclosures/scheme-portfolios",
+  "amc_halfYearly_portfolio_disclosure": "https://mf.whiteoakamc.com/regulatory-disclosures/scheme-portfolios",
+  "amc_monthly_mf_factsheets": "https://mf.whiteoakamc.com/download#Factsheet",
+  "amc_riskometer_monthly": "https://mf.whiteoakamc.com/regulatory-disclosures",
+  "amc_riskometer_yearly": "https://mf.whiteoakamc.com/regulatory-disclosures",
+  "amc_unclaimed_dividend_amt": "https://mf.whiteoakamc.com/regulatory-disclosures/unclaimed-amount",
+  "amc_unclaimed_redemption_amt": "https://mf.whiteoakamc.com/regulatory-disclosures/unclaimed-amount",
+  "amc_investonline_in_mf": "https://login.whiteoakamc.com/Investorlogin/",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=71",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=71",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai71.pdf",
+  "scheme_wise": "https://mf.whiteoakamc.com/regulatory-disclosures?query=mutual_fund_financials",
+  "icon_wordmark": {
+   "url": "/uploads/whiteoak_230x60_27187b4670.svg",
+   "hash": "whiteoak_230x60_27187b4670"
+  },
+  "amc_kyc": "https://mf.whiteoakamc.com/update-modify-kyc",
+  "icons": [
+   {
+    "url": "/uploads/whiteoak_64x64_f0d117bfc6.svg",
+    "hash": "whiteoak_64x64_f0d117bfc6"
+   }
+  ]
+ },
+ {
+  "mf_id": "77",
+  "mf_name": "Zerodha Mutual Fund",
+  "amc_name": "Zerodha Asset Management Private Limited",
+  "amc_website": "https://www.zerodhafundhouse.com",
+  "amc_schemewise_annual_report": "https://assets.zerodhafundhouse.com/statutory-reports/other-disclosures/Annual%20Report%20of%20Schemes%202025-26.pdf",
+  "amc_fortnightly_portfolio_disclosure": "https://www.zerodhafundhouse.com/resources/disclosures?source=footer",
+  "amc_monthly_portfolio_disclosure": "https://www.zerodhafundhouse.com/resources/disclosures?source=footer",
+  "amc_halfYearly_portfolio_disclosure": "https://www.zerodhafundhouse.com/resources/disclosures?source=footer",
+  "amc_monthly_mf_factsheets": "https://www.zerodhafundhouse.com/resources/fund-documents",
+  "amc_riskometer_monthly": "https://www.zerodhafundhouse.com/resources/disclosures?source=footer",
+  "amc_riskometer_yearly": "https://www.zerodhafundhouse.com/resources/disclosures?source=footer",
+  "amc_unclaimed_dividend_amt": "",
+  "amc_unclaimed_redemption_amt": "",
+  "amc_investonline_in_mf": "",
+  "rss_latest_nav": "https://portal.amfiindia.com/RssNAV.aspx?mf=77",
+  "rss_latest_aum": "https://portal.amfiindia.com/RssNAV.aspx?swise=y&mf=77",
+  "statement_of_information": "https://portal.amfiindia.com/spages/sai77.pdf",
+  "scheme_wise": "https://assets.zerodhafundhouse.com/statutory-reports/other-disclosures/Annual%20Report%20of%20Schemes%202025-26.pdf",
+  "icon_wordmark": {
+   "url": "/uploads/zerodha_rectangle_75f514cfd0.svg",
+   "hash": "zerodha_rectangle_75f514cfd0"
+  },
+  "amc_kyc": "https://www.camskra.com/PanDetailsUpdate.aspx",
+  "icons": [
+   {
+    "url": "/uploads/zerodha_sqaure_mark_918dd2576e.svg",
+    "hash": "zerodha_sqaure_mark_918dd2576e"
+   }
+  ]
+ }
+]

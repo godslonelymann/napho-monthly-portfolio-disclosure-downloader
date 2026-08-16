@@ -1,0 +1,20 @@
+[
+  {
+    "DownloadID": 9001,
+    "CategoryName": "Portfolio Disclosure",
+    "SubCategoryName": "Monthly Portfolio of Schemes",
+    "DocumentDate": "2026-06-05T00:00:00",
+    "Title": "Monthly Portfolio - JM Equity Fund - May 31, 2026",
+    "FileName": "CMS/downloads/Portfolio Disclosure/Monthly Portfolio of Schemes/Monthly Portfolio - JM Equity Fund - May 31, 2026.xlsx",
+    "FileEXT": ".xlsx"
+  },
+  {
+    "DownloadID": 9002,
+    "CategoryName": "Portfolio Disclosure",
+    "SubCategoryName": "Monthly Portfolio of Schemes",
+    "DocumentDate": "2026-06-05T00:00:00",
+    "Title": "Monthly Portfolio - JM Debt Fund - May 31 2026",
+    "FileName": "CMS/downloads/Portfolio Disclosure/Monthly Portfolio of Schemes/Monthly Portfolio - JM Debt Fund - May 31 2026.xlsx",
+    "FileEXT": ".xlsx"
+  }
+]
