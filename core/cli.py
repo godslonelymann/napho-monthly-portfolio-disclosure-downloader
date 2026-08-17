@@ -104,6 +104,15 @@ def _write_manifest(path: Path, manifest: dict) -> None:
     os.replace(temporary, path)
 
 
+def _response_header(response, name: str) -> str | None:
+    headers = getattr(response, "headers", None) or {}
+    try:
+        value = headers.get(name)
+    except AttributeError:
+        return None
+    return str(value) if value else None
+
+
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -176,6 +185,32 @@ def _extract_and_record(
     return entry, "extracted"
 
 
+def _unchanged_request_headers(existing: dict | None, destination: Path, output_root: Path) -> dict[str, str]:
+    """If-None-Match / If-Modified-Since for a file we already have.
+
+    Returned empty unless a previous run recorded this exact URL *and* the
+    file it wrote is still on disk with the hash it recorded -- otherwise a
+    304 would let us "keep" a file that isn't there any more. With them the
+    server can answer 304 and we skip re-downloading an unchanged workbook;
+    without them (no validators recorded, e.g. a first run) nothing changes.
+    """
+    if not existing:
+        return {}
+    recorded_path = existing.get("path")
+    digest = existing.get("sha256")
+    if not recorded_path or not digest:
+        return {}
+    path = output_root / recorded_path
+    if path != destination or not path.is_file() or _sha256(path) != digest:
+        return {}
+    headers = {}
+    if existing.get("etag"):
+        headers["If-None-Match"] = existing["etag"]
+    if existing.get("last_modified"):
+        headers["If-Modified-Since"] = existing["last_modified"]
+    return headers
+
+
 def _download_one(
     session,
     document: Document,
@@ -198,10 +233,13 @@ def _download_one(
         # returns a response object without context-manager support, so
         # this closes explicitly in the finally block below instead of
         # using "with".
+        existing_entry = downloads.get(document.url)
+        headers = {"Referer": document.source_page_url}
+        headers.update(_unchanged_request_headers(existing_entry, destination, output_root))
         try:
             response = session.get(
                 document.url,
-                headers={"Referer": document.source_page_url},
+                headers=headers,
                 stream=True,
                 timeout=timeout,
             )
@@ -213,6 +251,16 @@ def _download_one(
         except requests.RequestException as exc:
             raise RuntimeError(f"Request failed: url={document.url} phase=download: {exc}") from exc
         try:
+            if getattr(response, "status_code", None) == 304:
+                # The file host confirmed our copy is still current, so the
+                # bytes on disk (already hash-checked by
+                # _unchanged_request_headers) stand as they are.
+                print(f"unchanged  {document.period} {_safe_name(document)}")
+                return DownloadOutcome(
+                    document=document,
+                    status="skipped",
+                    destination=existing_entry.get("path"),
+                )
             response.raise_for_status()
             with tempfile.NamedTemporaryFile(prefix=".portfolio-", suffix=".part", dir=output_root, delete=False) as handle:
                 temporary_path = Path(handle.name)
@@ -257,6 +305,10 @@ def _download_one(
                 "bytes": destination.stat().st_size,
                 "sha256": digest,
                 "content_type": mimetypes.guess_type(destination.name)[0],
+                # Recorded so the next run can ask the file host whether
+                # anything changed instead of re-fetching every workbook.
+                "etag": _response_header(response, "ETag"),
+                "last_modified": _response_header(response, "Last-Modified"),
                 "downloaded_at": datetime.now().astimezone().isoformat(timespec="seconds"),
                 "metadata": document.metadata,
             }

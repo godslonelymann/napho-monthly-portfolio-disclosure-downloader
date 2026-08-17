@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import html as html_module
 import json
 import os
 import re
 import sys
 import time
 from pathlib import Path
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -14,241 +15,212 @@ if __package__ in {None, ""}:
 from core.cli import run_cli
 from core.config import settings
 from core.discovery import DiscoveryResult, PeriodUnavailable, document_from_link, dedupe_documents
-from core.periods import month_name, period_conflicts, period_matches
+from core.periods import last_period, month_name, period_conflicts
 
 
 AMC = "bandhan"
-# The old "portfolio-summary/monthly" page only ever lists one consolidated
-# debt-schemes workbook -- it structurally cannot cover equity/hybrid/index/
-# ETF/FOF schemes. This disclosure page adds a third (scheme) dropdown and
-# exposes every scheme individually, one file per scheme.
+# The "downloads/portfolio-summary/monthly" page only ever lists one
+# consolidated debt-schemes workbook -- it structurally cannot cover
+# equity/hybrid/index/ETF/FOF schemes (it also offers a 2018 that this page
+# doesn't, but only for that one debt workbook). This disclosure page is the
+# per-scheme one: one file per scheme, every scheme type.
 PAGE_URL = os.getenv(
     "BANDHAN_PAGE_URL",
     "https://bandhanmutual.com/statutory-disclosures/scheme-portfolios/monthly-half-yearly",
 )
-TAB_LABEL = "Monthly and Half Yearly"
-# Rows no longer have a plain a[href]; a click fires a JS handler that calls
-# this API with the real file location in a "filepath" query parameter.
-DOWNLOAD_ENDPOINT_MARKER = "/investor/v1/dashboard/download-doc"
-CMS_CALL_MARKER = "cms-call"
-ROW_SELECTOR = "div.flex.items-center.px-2.py-3.border-b.w-full"
-ROW_LABEL_SELECTOR = ".text-base.mx-1"
-# The three dropdowns (year, month, scheme) are the only children of this
-# container and it is otherwise unique on the page (verified against the
-# live DOM). Indexing into it by position sidesteps the problem that a
-# trigger button's own label is whatever value is currently selected (e.g.
-# "July", or a scheme name), not a fixed marker we could match on.
-DROPDOWN_CONTAINER_SELECTOR = "div.flex.flex-wrap.gap-3"
 
-MAX_SELECT_ATTEMPTS = 3
-MIN_FILE_BYTES = 1024
+# How the page's own React app asks its API for a listing. The request body
+# on the wire is encrypted by the site's JS, and nothing here reimplements
+# or bypasses that: the browser is left to build, sign and send the request
+# exactly as it always does. All this adapter does is (a) hand the app a
+# different set of *plaintext* query parameters just before its own
+# JSON.stringify runs, and (b) read the app's own decrypted response after
+# its own JSON.parse. No key, api-key, fingerprint or signature is
+# recreated, stored, or hardcoded anywhere in this file.
+API_REQUEST_TYPE = "SCHEME_PORTFOLIOS"
+API_SUBCATEGORY = "monthly-and-half-yearly"
+# One listing request returns every scheme for the month. The page's own UI
+# asks for a single scheme at a time (its third dropdown is a filter on this
+# same query), which is why the previous version of this adapter had to
+# drive ~79 dropdown selections per month and could not finish one month
+# inside the range runner's per-cell timeout. Dropping that one filter turns
+# a month into a single page load.
+PER_PAGE = 200
+# Marker that identifies our own response among the page's: the app never
+# asks for this many posts per page on its own, and the API echoes the
+# value back in every payload.
+_PAGE_LOAD_ATTEMPTS = 3
+_RESPONSE_TIMEOUT_MS = 45_000
+_RETRY_BACKOFF_SECONDS = 2.0
+_MAX_PAGES_GUARD = 50
+
+# Older documents live on the CMS host, newer ones on Google Cloud Storage;
+# both are plain static files fetched over HTTP by core.cli (no browser).
+# Some rows still point at the site's own download shim, which carries the
+# real storage location in a "filepath" query parameter.
+DOWNLOAD_SHIM_MARKER = "/investor/v1/dashboard/download-doc"
+
+MONTHLY_SUBDIR = "monthly"
 
 
-def _dropdown_wrappers(page):
-    container = page.locator(DROPDOWN_CONTAINER_SELECTOR).first
-    return container.locator(":scope > div > div.relative")
+# -- the page-side hook --------------------------------------------------
+# Installed with add_init_script, i.e. before any of the site's own code
+# runs. It wraps JSON.stringify to substitute our query into the outgoing
+# listing request (on a copy -- the app's own state object is left alone),
+# and JSON.parse to capture the decrypted listing response the app receives.
+_INIT_SCRIPT_TEMPLATE = """
+(() => {
+  const QUERY = %(query)s;
+  window.__bandhanCaptures = [];
+  const stringify = JSON.stringify;
+  const parse = JSON.parse;
+  JSON.stringify = function (value, replacer, space) {
+    try {
+      if (value && value.type === QUERY.type && value.data) {
+        const data = Object.assign({}, value.data, QUERY.data);
+        delete data.acf_key1;    // the scheme filter: dropped so the
+        delete data.acf_value1;  // response covers every scheme at once
+        for (const key of Object.keys(data)) {
+          if (data[key] === null) delete data[key];
+        }
+        return stringify.call(this, Object.assign({}, value, {data: data}), replacer, space);
+      }
+    } catch (error) { /* fall through to the untouched call below */ }
+    return stringify.apply(this, arguments);
+  };
+  JSON.parse = function (text) {
+    const result = parse.apply(this, arguments);
+    try {
+      if (result && typeof result === 'object'
+          && (result.scheme_titles || result.status === 'no_posts_found')) {
+        window.__bandhanCaptures.push(result);
+      }
+    } catch (error) { /* capturing is best-effort, never break the app */ }
+    return result;
+  };
+})();
+"""
 
 
-def _select_dropdown_option(page, wrapper, target: str, playwright_timeout_error, *, attempts: int = MAX_SELECT_ATTEMPTS):
-    """Click a dropdown open, choose ``target``, and wait for its refresh fetch to land.
+def _init_script(period: str | None, page_number: int) -> str:
+    """The page-side hook, parameterised for one listing request.
 
-    Returns True if a cms-call response was observed to succeed, False if the
-    site never responded after every retry (a real outage, not just "empty").
-    Raises if ``target`` isn't even offered as an option -- that's a
-    structural mismatch, not a timing issue, and retrying won't fix it.
+    ``period`` of None asks for whatever year/month the page defaults to --
+    used to read the site's own list of available years when the requested
+    period produced nothing at all.
     """
-    option_pattern = re.compile(rf"^\s*{re.escape(target)}\s*$")
-    for attempt in range(1, attempts + 1):
-        wrapper.locator("button").first.click()
+    data: dict[str, object] = {
+        "subcategory": API_SUBCATEGORY,
+        "page": page_number,
+        "posts_per_page": PER_PAGE,
+        # null is stripped page-side, leaving the app's own value in place.
+        "financial_year": period[:4] if period else None,
+        "month": month_name(period) if period else None,
+    }
+    query = {"type": API_REQUEST_TYPE, "data": data}
+    return _INIT_SCRIPT_TEMPLATE % {"query": json.dumps(query)}
+
+
+def capture_index(summaries: list, page_number: int) -> int | None:
+    """Which capture is the response to *our* request, if it has landed yet.
+
+    PER_PAGE is the marker (the app never asks for that many by itself) and
+    the page number disambiguates our own successive requests. A
+    "no_posts_found" body carries no echo at all -- that is what the site
+    returns for a year it doesn't publish -- so it is accepted as-is and
+    left for the caller to classify.
+
+    Takes cheap {status, posts_per_page, current_page} summaries rather than
+    whole payloads: this runs every poll, and a month's listing is hundreds
+    of kilobytes that would otherwise cross the browser bridge each time.
+    """
+    for index, summary in enumerate(summaries or []):
+        if not isinstance(summary, dict):
+            continue
+        if summary.get("status") == "no_posts_found":
+            return index
+        if summary.get("posts_per_page") == PER_PAGE and summary.get("current_page") == page_number:
+            return index
+    return None
+
+
+_CAPTURE_SUMMARY_JS = """() => (window.__bandhanCaptures || []).map(
+    capture => ({
+        status: capture && capture.status,
+        posts_per_page: capture && capture.posts_per_page,
+        current_page: capture && capture.current_page,
+    })
+)"""
+
+
+def _fetch_listing(browser, period: str | None, page_number: int, playwright_timeout_error) -> dict:
+    """Load the page once with the hook installed and return the listing payload.
+
+    A fresh page per request keeps this stateless: the query is baked into
+    the init script, so the very first request the app makes on load is
+    already the one we want and no dropdown has to be driven at all.
+
+    Raises RuntimeError if the site never answers after every attempt --
+    that is an outage/timeout, deliberately distinct from the site
+    answering "nothing here", which returns a payload for the caller to
+    classify.
+    """
+    config = settings()
+    last_error = "no response"
+    for attempt in range(1, _PAGE_LOAD_ATTEMPTS + 1):
+        page = browser.new_page()
         try:
-            # Opening the list is a React state update, not part of the click
-            # itself -- reading options before it commits sees an empty list
-            # and would otherwise be mistaken for "no such option".
-            wrapper.locator("li").first.wait_for(state="visible", timeout=3_000)
-        except playwright_timeout_error:
-            if attempt < attempts:
-                page.wait_for_timeout(400)
-                continue
-            raise RuntimeError(f"Bandhan dropdown never opened while selecting {target!r}")
-        options = wrapper.locator("li", has_text=option_pattern)
-        if options.count() == 0:
-            raise PeriodUnavailable(f"Bandhan does not list {target!r} as a dropdown option")
-        try:
-            with page.expect_response(lambda response: CMS_CALL_MARKER in response.url, timeout=8_000) as response_info:
-                options.first.click()
-            if response_info.value.ok:
-                page.wait_for_timeout(250)  # let the React re-render catch up with the response
-                return True
-        except playwright_timeout_error:
-            pass
-        if attempt < attempts:
-            page.wait_for_timeout(500)
-    return False
+            page.add_init_script(_init_script(period, page_number))
+            page.goto(PAGE_URL, wait_until="domcontentloaded", timeout=config.read_timeout * 1000)
+            deadline = time.monotonic() + _RESPONSE_TIMEOUT_MS / 1000
+            while time.monotonic() < deadline:
+                index = capture_index(page.evaluate(_CAPTURE_SUMMARY_JS), page_number)
+                if index is not None:
+                    return page.evaluate("index => window.__bandhanCaptures[index]", index)
+                page.wait_for_timeout(500)
+            last_error = f"timed out waiting {_RESPONSE_TIMEOUT_MS // 1000}s for the site's listing API"
+        except playwright_timeout_error as exc:
+            last_error = f"page load timed out: {exc}"
+        finally:
+            page.close()
+        if attempt < _PAGE_LOAD_ATTEMPTS:
+            time.sleep(_RETRY_BACKOFF_SECONDS * attempt)  # exponential-ish backoff
+    # Worded so the range runner reads this as a transport failure worth
+    # retrying (backfill_range._HTTP_ERROR_RE), not as a site-structure
+    # change or as "this period has nothing".
+    raise RuntimeError(
+        f"Bandhan disclosure page returned no listing response "
+        f"(page {page_number}, attempts<={_PAGE_LOAD_ATTEMPTS}): {last_error}"
+    )
 
 
-def _select_scheme(page, wrapper, name: str, period: str, playwright_timeout_error, *, timeout_ms: int = 1_200, poll_ms: int = 100):
-    """Open the scheme dropdown, choose ``name``, and wait on the row's own
-    text actually changing rather than on the site's network response.
+# -- payload handling (pure; no browser involved) ------------------------
 
-    The listing API is fast (~0.2s in practice) but Playwright's response
-    listener occasionally misses the event outright, and waiting on it then
-    costs a full multi-second timeout for nothing -- across ~79 schemes a
-    handful of these misses turned a ~1 minute job into a ~20 minute one.
-    The row label is the thing this adapter actually needs to be true (it's
-    already re-checked against staleness below), so polling it directly is
-    both faster and no less safe: a stale row still fails the label/period
-    check and is retried exactly as before.
 
-    The site also occasionally drops the refresh fetch outright for a
-    scheme change (the same "dropped fetch" behaviour documented in
-    _pick_dropdown's history for year/month, observed here too): nothing
-    renders, nothing errors, the previous scheme's row just sits there
-    unchanged until the dropdown is reopened. ``timeout_ms`` is deliberately
-    short (real responses land in ~0.2s) so that case is detected and handed
-    back to the caller's retry loop quickly rather than burning a long wait
-    on a fetch that was never going to arrive.
+def direct_url(raw_url: str) -> str:
+    """The real storage URL behind a listing entry.
 
-    Returns ``(good_rows, saw_any_row, responded)``: ``good_rows`` is a list
-    of ``(row, label)`` pairs whose text names this scheme and period;
-    ``saw_any_row`` records whether any row rendered at all (used to tell
-    "confirmed empty" apart from "nothing rendered yet"); ``responded``
-    records whether the site's own listing endpoint was observed to answer
-    for this click (used to tell a dead dropdown entry apart from an outage).
+    Most rows already carry the storage URL (googleapis.com for recent
+    months, the CMS host for older ones). Some carry the site's own
+    download shim instead, which only redirects: its "filepath" query
+    parameter is the actual location, so it is preferred whenever it is
+    itself a usable absolute URL.
     """
-    option_pattern = re.compile(rf"^\s*{re.escape(name)}\s*$")
-    wrapper.locator("button").first.click()
-    try:
-        wrapper.locator("li").first.wait_for(state="visible", timeout=3_000)
-    except playwright_timeout_error:
-        raise RuntimeError(f"Bandhan dropdown never opened while selecting {name!r}")
-    options = wrapper.locator("li", has_text=option_pattern)
-    if options.count() == 0:
-        raise PeriodUnavailable(f"Bandhan does not list {name!r} as a dropdown option")
-
-    responded = {"value": False}
-
-    def _on_response(response) -> None:
-        if CMS_CALL_MARKER in response.url and response.ok:
-            responded["value"] = True
-
-    page.on("response", _on_response)
-    try:
-        options.first.click()
-        deadline = time.monotonic() + timeout_ms / 1000
-        saw_any_row = False
-        good_rows: list[tuple] = []
-        while time.monotonic() < deadline:
-            rows = page.locator(ROW_SELECTOR)
-            row_count = rows.count()
-            if row_count:
-                saw_any_row = True
-                candidates = []
-                for index in range(row_count):
-                    row = rows.nth(index)
-                    label = row.locator(ROW_LABEL_SELECTOR).inner_text().strip()
-                    if not _label_matches_scheme(label, name):
-                        continue
-                    evidence = f"{label} {name}"
-                    if period_conflicts(evidence, period) or not period_matches(evidence, period):
-                        continue
-                    candidates.append((row, label))
-                if candidates:
-                    good_rows = candidates
-                    break
-            page.wait_for_timeout(poll_ms)
-        return good_rows, saw_any_row, responded["value"]
-    finally:
-        page.remove_listener("response", _on_response)
+    raw_url = (raw_url or "").strip()
+    if DOWNLOAD_SHIM_MARKER not in raw_url:
+        return raw_url
+    filepath = (parse_qs(urlsplit(raw_url).query).get("filepath") or [""])[0]
+    filepath = unquote(filepath).strip()
+    if filepath.startswith(("http://", "https://")):
+        return filepath
+    return raw_url
 
 
-def _select_period(page, period: str, playwright_timeout_error) -> None:
-    year = period[:4]
-    target_month = month_name(period)
-    tab = page.get_by_role("button", name=TAB_LABEL, exact=True).first
-    tab.click()
-    wrappers = _dropdown_wrappers(page)
-    if not _select_dropdown_option(page, wrappers.nth(0), year, playwright_timeout_error):
-        raise RuntimeError(f"Bandhan disclosure page never confirmed the year={year} selection")
-    # Selecting the year can reset the month dropdown to its default, so
-    # month must be picked after, and the wrapper handles must be re-fetched
-    # since a rerender can replace the underlying DOM nodes.
-    wrappers = _dropdown_wrappers(page)
-    if not _select_dropdown_option(page, wrappers.nth(1), target_month, playwright_timeout_error):
-        raise RuntimeError(f"Bandhan disclosure page never confirmed the month={target_month} selection")
-    wrappers = _dropdown_wrappers(page)
-    trigger_year = wrappers.nth(0).locator("button").first.inner_text().strip()
-    trigger_month = wrappers.nth(1).locator("button").first.inner_text().strip()
-    if trigger_year != year or trigger_month != target_month:
-        raise RuntimeError(
-            f"Bandhan dropdowns show {trigger_year!r}/{trigger_month!r} after selecting {year!r}/{target_month!r}"
-        )
-
-
-def _wait_for_boot(page, playwright_timeout_error, *, timeout_ms: int = 20_000) -> None:
-    """Wait past the page's initial load state where dropdowns read "Select Year" etc.
-
-    Reading the DOM before this settles finds zero usable dropdowns and
-    produces a confusing "no such option" error instead of an honest
-    "the page never finished loading" one.
-    """
-    year_pattern = re.compile(r"^\s*20\d{2}\s*$")
-    try:
-        page.wait_for_function(
-            """(sel) => {
-                const container = document.querySelector(sel);
-                if (!container) return false;
-                const buttons = container.querySelectorAll('div.relative button');
-                return buttons.length >= 3 && /^\\s*20\\d{2}\\s*$/.test(buttons[0].innerText);
-            }""",
-            arg=DROPDOWN_CONTAINER_SELECTOR,
-            timeout=timeout_ms,
-        )
-    except playwright_timeout_error as exc:
-        raise RuntimeError("Bandhan disclosure page dropdowns never finished loading") from exc
-
-
-def _scheme_options(page) -> list[str]:
-    wrapper = _dropdown_wrappers(page).nth(2)
-    wrapper.locator("button").first.click()
-    names = wrapper.locator("li").all_inner_texts()
-    page.keyboard.press("Escape")
-    names = [name.strip() for name in names if name.strip()]
-    if not names:
-        raise RuntimeError("Bandhan scheme dropdown listed no schemes")
-    return names
-
-
-# ICRA's Fund_Name never carries the site's plan-option suffix, and the
-# site's own row label already drops it (e.g. dropdown option "Bandhan Fixed
-# Term Plan - Series 179 - Growth" renders as row label "Bandhan Fixed Term
-# Plan Series 179 (3652 days) ..."), so this is what the audit's manifest
-# matching needs to see as the canonical scheme identity.
 def _canonical_scheme_name(option_name: str) -> str:
-    return re.sub(r"\s*-\s*growth\s*$", "", option_name, flags=re.I).strip()
-
-
-_STOPWORDS = {"bandhan"}
-
-
-def _significant_tokens(text: str) -> set[str]:
-    text = re.sub(r"\s*-\s*growth\s*$", "", text, flags=re.I)
-    return {token for token in re.findall(r"[a-z0-9]+", text.lower()) if token not in _STOPWORDS}
-
-
-def _label_matches_scheme(label: str, scheme_name: str) -> bool:
-    """A defensive check against stale rows: does the row's own text actually
-    look like the scheme we just selected, not whatever was on screen before?
-
-    Tolerates one missing token (the site drops "Growth" from row labels) but
-    nothing more -- schemes with very similar names (Nifty 50 Index Fund vs
-    Nifty 50 ETF) must not be allowed to satisfy each other.
-    """
-    scheme_tokens = _significant_tokens(scheme_name)
-    if not scheme_tokens:
-        return False
-    label_tokens = _significant_tokens(label)
-    missing = scheme_tokens - label_tokens
-    return len(missing) <= 1
+    """ICRA's Fund_Name never carries the site's plan-option suffix, and the
+    site's own document titles drop it too, so this is the scheme identity
+    the audit's manifest matching needs to see."""
+    return re.sub(r"\s*-\s*growth\s*$", "", option_name or "", flags=re.I).strip()
 
 
 def _safe_filename(scheme_name: str, period: str) -> str:
@@ -257,27 +229,136 @@ def _safe_filename(scheme_name: str, period: str) -> str:
     return f"bandhan_{slug}_{period}.xlsx"
 
 
-MONTHLY_SUBDIR = "monthly"
+def _clean_text(value: str) -> str:
+    return html_module.unescape(re.sub(r"<[^>]+>", "", str(value or ""))).replace("–", "-").strip()
+
+
+def _row_is_for_period(*, month_field: str, evidence: str, period: str) -> bool:
+    """Does this listing row really describe ``period``?
+
+    The payload is already scoped to the requested year and month (the API
+    echoes both back), so this is a safety net against a mislabelled row --
+    e.g. the site files the odd December document under a year whose other
+    months are unrelated. Only the row's own month field and its
+    title/filename are consulted; the storage URL's directory is *not*
+    (that is the upload date, not the as-of date, and routinely differs).
+    """
+    month_field = (month_field or "").strip().lower()
+    if month_field and month_field[:3] != month_name(period).lower()[:3]:
+        return False
+    return not period_conflicts(evidence, period)
+
+
+def records_from_payload(payload: dict, period: str, misfiled: list | None = None) -> list[dict]:
+    """Every downloadable document in one listing payload, as flat records.
+
+    Each record is {"scheme", "label", "url", "filename"}. Filenames are
+    assigned here (not at download time) because two documents for one
+    scheme in the same month -- the monthly portfolio and a half-yearly one
+    -- would otherwise collide, and core.cli treats a filename collision as
+    a hard discovery error.
+
+    A row the site files under this period but whose own title names a
+    different one (it does happen: the site's only December-2020 entry is a
+    workbook dated 31 Dec 2022) is never saved under this period -- that
+    would file the wrong month's holdings as this month's. It is appended to
+    ``misfiled`` instead, so it is recorded in the discovery report and
+    printed rather than silently dropped.
+    """
+    records: list[dict] = []
+    seen_urls: set[str] = set()
+    for row in payload.get("data") or []:
+        if not isinstance(row, dict):
+            continue
+        acf = row.get("acf_fields") or {}
+        mapping = acf.get("funds_mapping") or {}
+        label = _clean_text(acf.get("document_name") or row.get("title") or "")
+        scheme = _canonical_scheme_name(_clean_text(mapping.get("post_title") or "")) or label
+        for entry in acf.get("disclosure_files") or []:
+            if not isinstance(entry, dict):
+                continue
+            url = direct_url(entry.get("url") or "")
+            if not url.startswith(("http://", "https://")):
+                continue
+            basename = unquote(Path(urlsplit(url).path).name)
+            evidence = f"{label} {basename}"
+            if not _row_is_for_period(month_field=acf.get("month") or "", evidence=evidence, period=period):
+                if misfiled is not None:
+                    misfiled.append({
+                        "scheme": scheme,
+                        "label": label,
+                        "url": url,
+                        "listed_under": period,
+                        # From the label alone: a filename's trailing "_1"
+                        # copy-suffix reads as a month to the period parser
+                        # ("...31-Dec-2022_1" -> 2022-01), and this string is
+                        # what the operator sees in the report.
+                        "document_period": last_period(label) or last_period(evidence) or "unknown",
+                    })
+                continue
+            if url in seen_urls:  # the same file listed twice
+                continue
+            seen_urls.add(url)
+            records.append({"scheme": scheme or "bandhan", "label": label, "url": url})
+    return _assign_filenames(records, period)
+
+
+def _assign_filenames(records: list[dict], period: str) -> list[dict]:
+    by_scheme: dict[str, list[dict]] = {}
+    for record in records:
+        by_scheme.setdefault(record["scheme"], []).append(record)
+    used: dict[str, int] = {}
+    for scheme, group in by_scheme.items():
+        for record in group:
+            base = _safe_filename(scheme if len(group) == 1 else f"{scheme} {record['label']}", period)
+            count = used.get(base, 0)
+            used[base] = count + 1
+            # Still-colliding names (two documents whose labels slugify the
+            # same) get a deterministic suffix rather than silently
+            # overwriting each other during download.
+            record["filename"] = base if not count else base.replace(".xlsx", f"_{count + 1}.xlsx")
+    return records
+
+
+def _available_months(payload: dict) -> list[str]:
+    return [str(month) for month in (payload.get("months") or [])]
+
+
+def _available_years(payload: dict) -> list[str]:
+    return [str(year) for year in (payload.get("financial_years") or [])]
+
+
+def _absence_reason(payload: dict, fallback_payload: dict | None, period: str) -> str:
+    """Why this period has no documents, in the site's own terms."""
+    year = period[:4]
+    month = month_name(period)
+    years = _available_years(payload) or _available_years(fallback_payload or {})
+    if years and year not in years:
+        return (
+            f"Bandhan does not list {year} as an available year for {period} "
+            f"(the site offers {', '.join(sorted(years))})"
+        )
+    months = _available_months(payload)
+    if months and month not in months:
+        return (
+            f"Bandhan lists no {month} in {year} for {period} "
+            f"(months published that year: {', '.join(months)})"
+        )
+    return f"Bandhan lists no monthly portfolio documents for {period}"
+
+
+# -- report / notes ------------------------------------------------------
 
 
 def _report_path(period: str) -> Path:
     config = settings()
     slug = re.sub(r"[^a-z0-9._-]+", "_", AMC.lower()).strip("_")
-    # Must match run_cli's own download destination (see the "subdir" call
-    # below) so the discovery report sits next to the files it describes.
+    # Must match run_cli's own download destination (see the "subdir"
+    # argument below) so the discovery report sits next to the files it
+    # describes; scripts/verify_bandhan.py reads it from there.
     directory = config.output_dir / slug / MONTHLY_SUBDIR / period
     directory.mkdir(parents=True, exist_ok=True)
     return directory / ".bandhan_discovery_report.json"
-
-
-def _load_report(path: Path) -> dict:
-    if not path.exists():
-        return {}
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return {}
-    return data if isinstance(data, dict) else {}
 
 
 def _write_report(path: Path, report: dict) -> None:
@@ -286,31 +367,36 @@ def _write_report(path: Path, report: dict) -> None:
     os.replace(tmp, path)
 
 
-def _download_row(page, row, playwright_timeout_error, *, attempts: int = 2) -> str | None:
-    button = row.locator("button").first
-    for _ in range(attempts):
-        try:
-            with page.expect_request(lambda request: DOWNLOAD_ENDPOINT_MARKER in request.url, timeout=10_000) as request_info:
-                button.click()
-            query = parse_qs(urlsplit(request_info.value.url).query)
-            filepath = (query.get("filepath") or [None])[0]
-            if filepath:
-                return filepath
-        except playwright_timeout_error:
-            continue
-    return None
+def build_scheme_report(payload: dict, records: list[dict]) -> dict:
+    """Per-scheme found/not_published verdicts over the site's own scheme list.
+
+    Every scheme the site offers gets an explicit answer, so a month with
+    fewer files than schemes reads as "the site publishes nothing for these
+    N schemes this month" rather than as a silent discovery gap.
+    """
+    by_scheme: dict[str, list[dict]] = {}
+    for record in records:
+        by_scheme.setdefault(record["scheme"], []).append(record)
+    report: dict[str, dict] = {}
+    for title in payload.get("scheme_titles") or []:
+        canonical = _canonical_scheme_name(_clean_text(title))
+        found = by_scheme.pop(canonical, None)
+        report[canonical] = {"status": "found", "documents": found} if found else {"status": "not_published"}
+    # A document whose scheme isn't in the dropdown list (renamed fund,
+    # merged scheme) is still a real file -- record it rather than drop it.
+    for scheme, found in by_scheme.items():
+        report[scheme] = {"status": "found", "documents": found}
+    return report
 
 
 def _discovery_notes_summary(schemes_report: dict) -> dict:
-    """A compact, audit-friendly digest of the per-scheme resume report.
+    """A compact, audit-friendly digest of the per-scheme report.
 
-    Full per-scheme detail (including which documents were found for a
-    "found" scheme) already lives in .bandhan_discovery_report.json -- this
+    Full per-scheme detail lives in .bandhan_discovery_report.json -- this
     is what's worth surfacing directly in .expected.json alongside the
-    expected file list, without duplicating that whole file: how many
-    schemes the dropdown offered in total, and which of them the site
-    itself confirmed publish nothing this period (so a smaller expected
-    count than "total schemes" reads as expected, not as a discovery bug).
+    expected file list: how many schemes the site offered in total, and
+    which of them it confirmed publish nothing this period (so a smaller
+    expected count than "total schemes" reads as expected, not as a bug).
     """
     status_counts: dict[str, int] = {}
     not_published: list[str] = []
@@ -326,6 +412,36 @@ def _discovery_notes_summary(schemes_report: dict) -> dict:
     }
 
 
+# -- discovery -----------------------------------------------------------
+
+
+def collect_records(fetch, period: str, misfiled: list | None = None) -> tuple[dict, list[dict]]:
+    """Walk every page of the listing for ``period``.
+
+    ``fetch(period, page_number)`` returns one payload -- injected so this,
+    the pagination logic, can be tested without a browser.
+
+    Returns (first payload, records). The first payload carries the site's
+    own year/month/scheme metadata, which is what makes an empty result
+    explainable ("no such year" vs "no such month" vs "nothing published").
+    """
+    first = fetch(period, 1)
+    if first.get("status") == "no_posts_found":
+        return first, []
+    records = records_from_payload(first, period, misfiled)
+    max_pages = int(first.get("max_pages") or 1)
+    for page_number in range(2, min(max_pages, _MAX_PAGES_GUARD) + 1):
+        payload = fetch(period, page_number)
+        if payload.get("status") == "no_posts_found":
+            break
+        records.extend(records_from_payload(payload, period, misfiled))
+    # Two pages can repeat a row if the site re-orders between requests.
+    unique: dict[str, dict] = {}
+    for record in records:
+        unique.setdefault(record["url"], record)
+    return first, _assign_filenames(list(unique.values()), period)
+
+
 def discover(period: str, session=None):
     try:
         from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -333,193 +449,69 @@ def discover(period: str, session=None):
     except ImportError as exc:
         raise RuntimeError("Bandhan discovery requires Playwright; install requirements and Chromium") from exc
 
-    report_path = _report_path(period)
-    # Resume support: a scheme already resolved as "found" or "not_published"
-    # in a prior run for this exact period is trusted and skipped, so a mid
-    # -run browser crash doesn't force redownloading 70+ schemes that already
-    # succeeded. Anything that previously "errored" is retried.
-    report = _load_report(report_path)
-    resolved: dict[str, dict] = {
-        name: entry for name, entry in report.get("schemes", {}).items() if entry.get("status") in {"found", "not_published", "unavailable_on_site"}
-    }
-
-    documents: list = []
-    for name, entry in resolved.items():
-        if entry.get("status") == "found":
-            for item in entry.get("documents", []):
-                documents.append(
-                    document_from_link(
-                        amc=AMC,
-                        period=period,
-                        source_page_url=PAGE_URL,
-                        link=item["url"],
-                        label=item["label"],
-                        filename=item["filename"],
-                        scheme=item["scheme"],
-                    )
-                )
-
-    schemes_report: dict[str, dict] = dict(resolved)
-    errors: list[str] = []
-    site_responded_at_least_once = False
-
+    config = settings()
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=settings().headless)
-        page = browser.new_page()
+        browser = playwright.chromium.launch(headless=config.headless)
         try:
-            page.goto(PAGE_URL, wait_until="domcontentloaded", timeout=settings().read_timeout * 1000)
-            _wait_for_boot(page, PlaywrightTimeoutError)
-            _select_period(page, period, PlaywrightTimeoutError)
-            # Reaching here means the year and month selections both got a
-            # successful listing response, which is proof the site is
-            # answering -- needed to tell a dead scheme entry apart from an
-            # outage even on a resumed run that only retries one scheme.
-            site_responded_at_least_once = True
-            all_scheme_names = _scheme_options(page)
-            pending = [name for name in all_scheme_names if name not in resolved]
+            def fetch(query_period: str | None, page_number: int) -> dict:
+                if page_number > 1 and config.delay_seconds:
+                    time.sleep(config.delay_seconds)  # be polite between page loads
+                return _fetch_listing(browser, query_period, page_number, PlaywrightTimeoutError)
 
-            for name in pending:
-                # A single scheme's own error (a dropdown that briefly won't
-                # open, an option that transiently disappeared) must not
-                # abort the other ~78 schemes -- record it and keep going.
-                # PeriodUnavailable can legitimately mean "not published" for
-                # a single scheme here (it's re-raised whole-page in
-                # _select_period, which runs before this loop), so it's
-                # folded into the per-scheme error bucket too.
-                try:
-                    canonical = _canonical_scheme_name(name)
-                    matched_docs: list[tuple] = []
-                    responded = False
-                    saw_rows = False
-                    mismatch_reason = None
-                    for verify_attempt in range(MAX_SELECT_ATTEMPTS):
-                        wrapper = _dropdown_wrappers(page).nth(2)
-                        try:
-                            good_rows, attempt_saw_rows, attempt_responded = _select_scheme(
-                                page, wrapper, name, period, PlaywrightTimeoutError
-                            )
-                        except RuntimeError as exc:
-                            # The dropdown itself briefly failed to open --
-                            # transient UI hiccup, not a verdict on the
-                            # scheme. Retry like any other missed attempt;
-                            # only let it propagate if every attempt fails.
-                            if verify_attempt == MAX_SELECT_ATTEMPTS - 1:
-                                raise
-                            mismatch_reason = str(exc)
-                            page.wait_for_timeout(400)
-                            continue
-                        responded = responded or attempt_responded
-                        # Unlike ``responded`` this must NOT accumulate across
-                        # attempts: attempt 1 can trivially see the *previous*
-                        # scheme's leftover row (that's the whole stale-row
-                        # problem this loop exists to survive), and if that
-                        # transient True stuck around it would permanently
-                        # block a later attempt's honest "confirmed empty"
-                        # reading from ever registering as not_published.
-                        saw_rows = attempt_saw_rows
-                        if attempt_responded:
-                            site_responded_at_least_once = True
-                        if good_rows:
-                            matched_docs = good_rows
-                            mismatch_reason = None
-                            break
-                        if not attempt_saw_rows:
-                            # No row rendered at all -- either a genuinely
-                            # empty result or the response hasn't landed yet.
-                            # Stop retrying once the response is confirmed,
-                            # otherwise give it one more pass.
-                            if attempt_responded:
-                                break
-                            mismatch_reason = None
-                            continue
-                        # Row(s) present but don't look like this scheme/period
-                        # yet -- classic stale-row race. Retry.
-                        mismatch_reason = "row text did not match selected scheme/period"
-
-                    if not matched_docs:
-                        if responded and not saw_rows:
-                            # The server answered and answered "empty" -- the
-                            # scheme genuinely publishes nothing this period
-                            # (e.g. a fund that matured before the month end).
-                            schemes_report[name] = {"status": "not_published"}
-                        elif not responded:
-                            # Some dropdown entries are simply dead: selecting
-                            # them fires no listing request at all, leaves the
-                            # previous scheme's row on screen, and their
-                            # download button yields nothing. That is
-                            # indistinguishable from a site outage in
-                            # isolation, so it is only downgraded to a benign
-                            # "site has no file" after the loop, and only if
-                            # this run proved the site was answering for
-                            # other schemes.
-                            schemes_report[name] = {"status": "no_response", "reason": "site fired no listing request"}
-                        else:
-                            errors.append(name)
-                            schemes_report[name] = {"status": "error", "reason": mismatch_reason}
-                        continue
-
-                    doc_records = []
-                    for row, label in matched_docs:
-                        filepath = _download_row(page, row, PlaywrightTimeoutError)
-                        if not filepath:
-                            continue
-                        filename = _safe_filename(canonical, period) if len(matched_docs) == 1 else _safe_filename(
-                            f"{canonical} {label}", period
-                        )
-                        doc_records.append({"url": filepath, "label": label, "filename": filename, "scheme": canonical})
-                        documents.append(
-                            document_from_link(
-                                amc=AMC,
-                                period=period,
-                                source_page_url=PAGE_URL,
-                                link=filepath,
-                                label=label,
-                                filename=filename,
-                                scheme=canonical,
-                            )
-                        )
-                    if doc_records:
-                        schemes_report[name] = {"status": "found", "documents": doc_records}
-                    else:
-                        errors.append(name)
-                        schemes_report[name] = {"status": "error", "reason": "row matched but never fired a download request"}
-                except (RuntimeError, PeriodUnavailable, PlaywrightTimeoutError) as exc:
-                    errors.append(name)
-                    schemes_report[name] = {"status": "error", "reason": str(exc)}
-
-                # Persist after every scheme so a crash only costs the one
-                # scheme in flight, not the whole run.
-                _write_report(
-                    report_path,
-                    {"period": period, "total_schemes": len(all_scheme_names), "schemes": schemes_report},
-                )
+            misfiled: list[dict] = []
+            first, records = collect_records(fetch, period, misfiled)
+            fallback = None
+            if not records and not _available_years(first):
+                # The site answered "no_posts_found", which carries no
+                # metadata at all -- ask it once more for its own default
+                # period purely to learn which years it does publish, so
+                # "2017 isn't offered" can be told apart from "something
+                # went wrong".
+                fallback = fetch(None, 1)
         finally:
             browser.close()
 
-    # Resolve the provisional "no_response" schemes now that the whole run's
-    # evidence is in. If the site answered for other schemes, it was up, so a
-    # scheme it never answered for is a dead listing rather than an outage.
-    for name, entry in schemes_report.items():
-        if entry.get("status") != "no_response":
-            continue
-        if site_responded_at_least_once:
-            entry["status"] = "unavailable_on_site"
-        else:
-            entry["status"] = "error"
-            errors.append(name)
-
-    _write_report(report_path, {"period": period, "total_schemes": len(schemes_report), "schemes": schemes_report})
-
-    documents = dedupe_documents(documents)
-    documents = [document for document in documents if document.period == period]
-
-    if errors:
-        raise RuntimeError(
-            f"Bandhan discovery could not confirm {len(errors)} scheme(s) for {period} after retries: "
-            f"{', '.join(sorted(errors))}. See {report_path} for details; re-run to retry only these."
+    for row in misfiled:
+        print(
+            f"skipped    {period} {row['label']!r}: the site lists it under {period} but the "
+            f"document itself is dated {row['document_period']} -- not saved as {period}"
         )
+
+    if not records:
+        reason = _absence_reason(first, fallback, period)
+        if misfiled:
+            reason += (
+                f"; the {len(misfiled)} row(s) it does list there are dated "
+                f"{', '.join(sorted({row['document_period'] for row in misfiled}))}"
+            )
+        raise PeriodUnavailable(reason)
+
+    schemes_report = build_scheme_report(first, records)
+    _write_report(
+        _report_path(period),
+        {
+            "period": period,
+            "total_schemes": len(schemes_report),
+            "schemes": schemes_report,
+            "misfiled_rows": misfiled,
+        },
+    )
+
+    documents = dedupe_documents([
+        document_from_link(
+            amc=AMC,
+            period=period,
+            source_page_url=PAGE_URL,
+            link=record["url"],
+            label=record["label"],
+            filename=record["filename"],
+            scheme=record["scheme"],
+        )
+        for record in records
+    ])
+    documents = [document for document in documents if document.period == period]
     if not documents:
-        raise PeriodUnavailable(f"Bandhan lists no monthly portfolio documents for {period}")
+        raise PeriodUnavailable(_absence_reason(first, fallback, period))
     return DiscoveryResult(documents=documents, notes=_discovery_notes_summary(schemes_report))
 
 

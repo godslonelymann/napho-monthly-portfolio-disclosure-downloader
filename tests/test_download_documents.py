@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 import unittest
@@ -12,9 +13,11 @@ from core.discovery import Document
 
 
 class _FakeResponse:
-    def __init__(self, *, body: bytes = b"", status: int = 200):
+    def __init__(self, *, body: bytes = b"", status: int = 200, headers: dict | None = None):
         self.body = body
         self.status = status
+        self.status_code = status
+        self.headers = headers or {}
         self.closed = False
 
     def raise_for_status(self):
@@ -42,9 +45,11 @@ class _FakeSession:
     def __init__(self, responses: dict[str, object]):
         self.responses = responses
         self.requested_urls: list[str] = []
+        self.sent_headers: list[dict] = []
 
     def get(self, url, **kwargs):
         self.requested_urls.append(url)
+        self.sent_headers.append(dict(kwargs.get("headers") or {}))
         outcome = self.responses[url]
         if isinstance(outcome, list):
             outcome = outcome.pop(0) if len(outcome) > 1 else outcome[0]
@@ -291,6 +296,150 @@ class PerDocumentRetryTests(unittest.TestCase):
         self.assertEqual([outcome.status for outcome in outcomes], ["downloaded", "downloaded"])
         self.assertEqual(session.requested_urls.count(doc_a.url), 1)
         self.assertEqual(session.requested_urls.count(doc_b.url), 2)
+
+
+class ManifestDeduplicationTests(unittest.TestCase):
+    """A re-run must not re-fetch a file the host says is unchanged."""
+
+    def setUp(self):
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tempdir.cleanup)
+        self.output_root = Path(self._tempdir.name)
+        config = SimpleNamespace(extract_archives=True, keep_archives=False, delay_seconds=0)
+        self._patch = patch("core.cli.settings", return_value=config)
+        self._patch.start()
+        self.addCleanup(self._patch.stop)
+
+    def _first_run(self, document, body):
+        session = _FakeSession({
+            document.url: _FakeResponse(
+                body=body,
+                headers={"ETag": '"abc123"', "Last-Modified": "Wed, 18 Jun 2025 14:29:21 GMT"},
+            )
+        })
+        download_documents(session, [document], self.output_root)
+        return json.loads((self.output_root / "manifest.json").read_text())
+
+    def test_the_first_download_records_the_hosts_validators(self):
+        document, body = _doc("fund_a")
+
+        manifest = self._first_run(document, body)
+
+        entry = manifest["downloads"][document.url]
+        self.assertEqual(entry["etag"], '"abc123"')
+        self.assertEqual(entry["last_modified"], "Wed, 18 Jun 2025 14:29:21 GMT")
+        self.assertEqual(entry["sha256"], hashlib.sha256(body).hexdigest())
+
+    def test_a_second_run_asks_the_host_whether_anything_changed(self):
+        document, body = _doc("fund_a")
+        self._first_run(document, body)
+
+        session = _FakeSession({document.url: _FakeResponse(status=304)})
+        outcomes = download_documents(session, [document], self.output_root)
+
+        self.assertEqual(session.sent_headers[0]["If-None-Match"], '"abc123"')
+        self.assertEqual(session.sent_headers[0]["If-Modified-Since"], "Wed, 18 Jun 2025 14:29:21 GMT")
+        self.assertEqual(outcomes[0].status, "skipped")
+
+    def test_a_304_leaves_the_file_and_its_manifest_entry_untouched(self):
+        document, body = _doc("fund_a")
+        manifest_before = self._first_run(document, body)
+
+        session = _FakeSession({document.url: _FakeResponse(status=304)})
+        download_documents(session, [document], self.output_root)
+
+        self.assertEqual((self.output_root / "fund_a.xlsx").read_bytes(), body)
+        manifest_after = json.loads((self.output_root / "manifest.json").read_text())
+        self.assertEqual(manifest_after["downloads"], manifest_before["downloads"])
+
+    def test_a_changed_file_is_downloaded_again_when_the_host_answers_200(self):
+        document, body = _doc("fund_a")
+        self._first_run(document, body)
+        new_body = b"PK\x03\x04 newer xlsx"
+
+        session = _FakeSession({document.url: _FakeResponse(body=new_body, headers={"ETag": '"def456"'})})
+        outcomes = download_documents(session, [document], self.output_root)
+
+        self.assertEqual(outcomes[0].status, "downloaded")
+        self.assertEqual((self.output_root / "fund_a.xlsx").read_bytes(), new_body)
+
+    def test_a_file_deleted_from_disk_is_re_downloaded_rather_than_asked_about(self):
+        # Without this the host could answer 304 for a file that is no
+        # longer there, and the run would report it as still present.
+        document, body = _doc("fund_a")
+        self._first_run(document, body)
+        (self.output_root / "fund_a.xlsx").unlink()
+
+        session = _FakeSession({document.url: _FakeResponse(body=body, headers={"ETag": '"abc123"'})})
+        outcomes = download_documents(session, [document], self.output_root)
+
+        self.assertNotIn("If-None-Match", session.sent_headers[0])
+        self.assertEqual(outcomes[0].status, "downloaded")
+
+    def test_a_file_modified_on_disk_since_the_manifest_was_written_is_re_downloaded(self):
+        document, body = _doc("fund_a")
+        self._first_run(document, body)
+        (self.output_root / "fund_a.xlsx").write_bytes(b"PK\x03\x04 tampered")
+
+        session = _FakeSession({document.url: _FakeResponse(body=body, headers={"ETag": '"abc123"'})})
+        outcomes = download_documents(session, [document], self.output_root)
+
+        self.assertNotIn("If-None-Match", session.sent_headers[0])
+        self.assertEqual((self.output_root / "fund_a.xlsx").read_bytes(), body)
+        self.assertEqual(outcomes[0].status, "downloaded")
+
+
+class InterruptedDownloadTests(unittest.TestCase):
+    """A killed run leaves a .part file behind; the next run must not trust it."""
+
+    def setUp(self):
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tempdir.cleanup)
+        self.output_root = Path(self._tempdir.name)
+        config = SimpleNamespace(extract_archives=True, keep_archives=False, delay_seconds=0)
+        self._patch = patch("core.cli.settings", return_value=config)
+        self._patch.start()
+        self.addCleanup(self._patch.stop)
+
+    def test_a_leftover_part_file_is_never_treated_as_the_download(self):
+        document, body = _doc("fund_a")
+        stale = self.output_root / ".portfolio-interrupted.part"
+        stale.write_bytes(b"PK\x03\x04 half a workbook")
+        session = _FakeSession({document.url: _FakeResponse(body=body)})
+
+        download_documents(session, [document], self.output_root)
+
+        manifest = json.loads((self.output_root / "manifest.json").read_text())
+        self.assertEqual(manifest["downloads"][document.url]["path"], "fund_a.xlsx")
+        self.assertEqual((self.output_root / "fund_a.xlsx").read_bytes(), body)
+
+    def test_a_failed_download_leaves_no_part_file_behind(self):
+        document, _ = _doc("fund_a")
+        session = _FakeSession({document.url: _FakeResponse(body=b"<html>error</html>")})
+
+        download_documents(session, [document], self.output_root, continue_on_error=True)
+
+        self.assertEqual(list(self.output_root.glob("*.part")), [])
+
+    def test_a_failed_download_does_not_leave_a_partial_destination_file(self):
+        document, _ = _doc("fund_a")
+        session = _FakeSession({document.url: _FakeResponse(body=b"<html>error</html>")})
+
+        download_documents(session, [document], self.output_root, continue_on_error=True)
+
+        self.assertFalse((self.output_root / "fund_a.xlsx").exists())
+
+    def test_an_interrupted_run_keeps_the_files_it_did_finish(self):
+        doc_a, body_a = _doc("fund_a")
+        doc_b, _ = _doc("fund_b")
+        session = _FakeSession({doc_a.url: _FakeResponse(body=body_a), doc_b.url: RuntimeError("connection reset")})
+
+        with self.assertRaises(RuntimeError):
+            download_documents(session, [doc_a, doc_b], self.output_root)
+
+        manifest = json.loads((self.output_root / "manifest.json").read_text())
+        self.assertIn(doc_a.url, manifest["downloads"])
+        self.assertEqual(list(self.output_root.glob("*.part")), [])
 
 
 if __name__ == "__main__":
