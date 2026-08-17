@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -39,6 +41,8 @@ _API_BASE = "https://cms.hdfcfund.com/en/hdfc/api/v2/disclosures"
 # whether it belongs to the requested period, not which bucket it came from.
 _STRUCTURED_FROM = "2021-04"
 
+_UPLOAD_FOLDER_RE = re.compile(r"/s3fs-public/(20\d\d-\d\d)/")
+
 
 def _api_files(session, config, *, year: int, month: int) -> list[dict]:
     response = session.post(
@@ -56,13 +60,35 @@ def _api_files(session, config, *, year: int, month: int) -> list[dict]:
     return ((payload.get("data") or {}).get("files")) or []
 
 
+def _disambiguated_filename(url: str, colliding_urls: list[str]) -> str | None:
+    """A distinct filename for one of several URLs that would otherwise
+    all resolve to the same basename (default document_from_link behaviour
+    is None -- let it derive the plain basename itself).
+
+    HDFC has, at least once (Nov 2021-Feb 2022), published the same scheme
+    under the same filename in two different upload folders -- an original
+    and what looks like a later correction, genuinely different bytes under
+    an identical name. Rather than guessing which one is "right" and
+    silently dropping the other, tag each with its upload folder so both
+    survive as distinct files.
+    """
+    if len(colliding_urls) <= 1:
+        return None
+    folder_match = _UPLOAD_FOLDER_RE.search(url)
+    tag = folder_match.group(1) if folder_match else str(colliding_urls.index(url))
+    name = unquote(Path(urlsplit(url).path).name)
+    stem, dot, ext = name.rpartition(".")
+    return f"{stem} ({tag}).{ext}" if dot else f"{name} ({tag})"
+
+
 def discover(period: str, session=None):
     session = session or create_session()
     config = settings()
     before = current_period()
     year, month = int(period[:4]), int(period[5:7])
+    structured = period >= _STRUCTURED_FROM
 
-    if period >= _STRUCTURED_FROM:
+    if structured:
         entries = _api_files(session, config, year=year, month=month)
     else:
         # Query the target calendar year plus its neighbours so whichever
@@ -72,7 +98,7 @@ def discover(period: str, session=None):
         for candidate_year in dict.fromkeys((year, year - 1, year + 1)):
             entries.extend(_api_files(session, config, year=candidate_year, month=0))
 
-    documents = []
+    candidates = []
     for entry in entries:
         title = entry.get("title") or ""
         # Some fiscal-year buckets (2020's, at least) mix in fortnightly
@@ -87,15 +113,39 @@ def discover(period: str, session=None):
         filename = file_info.get("filename") or ""
         if not url:
             continue
+        # In structured mode the API was already asked for this exact
+        # (year, month), so its scoping is authoritative -- some uploads
+        # (Aug 2021, at least) carry no date at all in the filename ("HDFC
+        # Top 100 Fund.xlsx"), which a client-side date re-check would only
+        # wrongly discard. Dump mode mixes many months together, so each
+        # file's own as-of date decides whether it belongs to `period`.
         # Some schemes (FMPs, target-maturity index funds) carry their own
-        # launch/maturity date in the name -- "HDFC FMP 3360D March 2014 (1)
-        # - 31 December 2021.xlsx" -- alongside the real as-of date. The
-        # as-of date is the one stated last, which resolve_as_of_period
+        # launch/maturity date in the name -- "HDFC FMP 3360D March 2014
+        # (1) - 31 December 2021.xlsx" -- alongside the real as-of date.
+        # The as-of date is the one stated last, which resolve_as_of_period
         # picks over an earlier scheme-name date.
-        if resolve_as_of_period(filename, title, before=before) != period:
+        if not structured and resolve_as_of_period(filename, title, before=before) != period:
             continue
+        candidates.append((title, url))
+
+    urls_by_basename: dict[str, list[str]] = {}
+    for _, url in candidates:
+        basename = unquote(Path(urlsplit(url).path).name)
+        urls_by_basename.setdefault(basename, []).append(url)
+
+    documents = []
+    for title, url in candidates:
+        basename = unquote(Path(urlsplit(url).path).name)
         documents.append(
-            document_from_link(amc=AMC, period=period, source_page_url=PAGE_URL, link=url, label=title, primary=True)
+            document_from_link(
+                amc=AMC,
+                period=period,
+                source_page_url=PAGE_URL,
+                link=url,
+                label=title,
+                filename=_disambiguated_filename(url, urls_by_basename[basename]),
+                primary=True,
+            )
         )
     documents = dedupe_documents(documents)
     if not documents:
