@@ -134,6 +134,12 @@ def _run_full_range(args: argparse.Namespace) -> int:
         argv += ["--timeout", str(args.timeout)]
     if args.workers is not None:
         argv += ["--workers", str(args.workers)]
+    if args.amc_delay is not None:
+        argv += ["--amc-delay", str(args.amc_delay)]
+    if args.retries is not None:
+        argv += ["--retries", str(args.retries)]
+    if args.retry_delay is not None:
+        argv += ["--retry-delay", str(args.retry_delay)]
     if args.manifest is not None:
         argv += ["--manifest", args.manifest]
 
@@ -158,7 +164,20 @@ def main() -> int:
     parser.add_argument("--discover-only", action="store_true", help="--full-range only: classify availability without downloading")
     parser.add_argument("--force", action="store_true", help="--full-range only: re-run cells already recorded as SUCCESS/ALREADY_EXISTS")
     parser.add_argument("--lag-months", type=int, default=None, help="--full-range only (default: 2)")
-    parser.add_argument("--workers", type=int, default=None, help="--full-range only: concurrent subprocesses (default: 6)")
+    parser.add_argument("--workers", type=int, default=None, help="--full-range only: how many AMCs to work on at once (default: 6)")
+    parser.add_argument(
+        "--amc-delay", type=float, default=None,
+        help="--full-range only: seconds between consecutive periods of the same AMC (default: 1.0)",
+    )
+    parser.add_argument(
+        "--retries", type=int, default=None,
+        help="--full-range only: extra attempts for a cell that fails with a retryable "
+             "status, on top of the first try (default: 3, i.e. up to 4 total attempts)",
+    )
+    parser.add_argument(
+        "--retry-delay", type=float, default=None,
+        help="--full-range only: seconds to wait before re-attempting a failed cell (default: 3.0)",
+    )
     parser.add_argument("--manifest", default=None, help="--full-range only (default: outputs/portfolio_manifest.csv)")
     args = parser.parse_args()
 

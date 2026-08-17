@@ -72,6 +72,16 @@ Status vocabulary (one CSV row per (amc, year, month), always):
 This file never lets one AMC's failure stop the run: every exception from a
 subprocess is caught, classified, and recorded, and the loop moves on.
 
+Scheduling: --workers controls how many AMCs are worked on at once; the
+periods *within* one AMC always run one at a time, a second apart by default
+(--amc-delay). See _run_amc_periods for why -- in short, a range is 120x the
+requests a single-month run makes, and pointing several workers at one site
+simultaneously is what turns that into a bot-wall block or a browser
+timeout. Total subprocess concurrency is unchanged, so this costs nothing
+except that the slowest single AMC (Bandhan drives a real browser per cell)
+now sets the floor on total wall clock. Raise --workers to put more AMCs in
+flight rather than reaching for more parallelism inside one.
+
 Two phases:
   --discover-only   AMC_DOWNLOAD=false: classify availability without
                      downloading anything, so the shape of a range can be
@@ -90,12 +100,13 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import queue
 import re
 import subprocess
 import sys
 import time
 from collections import Counter, defaultdict
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from pathlib import Path
 
@@ -125,8 +136,30 @@ UNKNOWN_ERROR = "UNKNOWN_ERROR"
 # Cells already in one of these statuses are considered "done" by a resumed
 # run and skipped (surfaced as ALREADY_EXISTS for SUCCESS-family, or
 # reproduced as-is for the not-available family) unless --force.
-_TERMINAL_UNAVAILABLE = {YEAR_NOT_AVAILABLE, MONTH_NOT_AVAILABLE, NO_DATA, NOT_YET_PUBLISHED}
+#
+# NOT_YET_PUBLISHED is deliberately NOT in this set. It is the one
+# "unavailable" answer that is explicitly about *when* the run happened
+# ("the AMC hasn't got round to publishing this yet"), so reusing it on a
+# later run permanently freezes the gap it describes: a month recorded as
+# NOT_YET_PUBLISHED in August would still be reported that way a year
+# later, and the range could never fill itself in over time. Months that
+# are still genuinely in the future are short-circuited in main() before
+# the resume shortcut is ever consulted, so re-attempting these costs
+# nothing for the future-dated ones and is the whole point for the rest.
+_TERMINAL_UNAVAILABLE = {YEAR_NOT_AVAILABLE, MONTH_NOT_AVAILABLE, NO_DATA}
 _TERMINAL_SUCCESS = {SUCCESS, ALREADY_EXISTS}
+
+# Statuses worth retrying automatically within a single run_one() call.
+# Deliberately excludes SUCCESS/ALREADY_EXISTS (nothing to retry) and the
+# confirmed "checked, nothing published" family -- NO_DATA/
+# YEAR_NOT_AVAILABLE/MONTH_NOT_AVAILABLE/NOT_YET_PUBLISHED are a real
+# answer, not a failure, so retrying them would just hammer the AMC's site
+# for the same negative result (see _apply_resume_shortcut for the same
+# reasoning applied across runs instead of within one).
+_RETRYABLE_STATUSES = {
+    DOWNLOAD_FAILED, HTTP_ERROR, SITE_CHANGED, INVALID_FILE,
+    DISCOVERY_FAILED, UNKNOWN_ERROR,
+}
 
 FIELDNAMES = [
     "amc", "year", "month", "status", "description",
@@ -135,14 +168,21 @@ FIELDNAMES = [
 
 # -- message classification ----------------------------------------------
 # core.cli.run_cli's own PeriodUnavailable path is the clean, explicit
-# signal (see core/discovery.py) -- but only 8 of the 53 verified adapters
+# signal (see core/discovery.py) -- but only 8 of the 52 verified adapters
 # raise it. The other ~45 signal the exact same "site checked, nothing
 # published this period" outcome with a plain RuntimeError whose message
 # names the period, e.g. "HDFC listing has no current monthly workbook for
-# 2019-04" (see verified/*.py -- every adapter follows this "no ... for
-# {period}" shape). Recognizing that shape is what makes those messages
-# classifiable at all without touching the adapters themselves.
-_PERIOD_SHAPE_RE = re.compile(r"\bfor\s+\d{4}-\d{2}\b")
+# 2019-04". Recognizing that shape is what makes those messages classifiable
+# at all without touching the adapters themselves.
+#
+# Matching the bare period token rather than "for <period>": almost every
+# adapter phrases it with "for", but not all -- Groww raises "Groww file
+# tree has no Portfolio/2026-08 workbooks", which is the same statement
+# with the period in a path instead of after a preposition, and requiring
+# the preposition sent every one of those to UNKNOWN_ERROR. What keeps this
+# looser pattern safe is the exclusion list in looks_like_no_data(), not
+# the shape of this regex.
+_PERIOD_SHAPE_RE = re.compile(r"\b20\d{2}-(?:0[1-9]|1[0-2])\b")
 _NO_DATA_WORDS_RE = re.compile(r"\b(no|not list|not available|not published|no longer offers)\b", re.IGNORECASE)
 
 # Structural drift: the adapter's own message says the page/API shape it
@@ -162,6 +202,20 @@ _HTTP_ERROR_RE = re.compile(
     r"\btimeout\b|\btimed out\b|connectionerror|sslerror|httperror|"
     r"read timed out|failed to establish|max retries exceeded|"
     r"connection refused|name or service not known|"
+    # A bare status code with no "status"/"error" word anywhere near it --
+    # the two patterns at the end of this regex both need one. HDFC's bot
+    # wall says exactly that and nothing else ("HDFC disclosure page
+    # returned 403 even with a browser-impersonated request"), so every one
+    # of its failures used to fall through to UNKNOWN_ERROR.
+    r"\breturned\s+[45]\d{2}\b|"
+    r"\b(?:http|https|status|code|response|responded)\W{0,12}[45]\d{2}\b|"
+    r"\baccess denied\b|\bforbidden\b|\btoo many requests\b|\bbot wall\b|"
+    # A headless-browser adapter that never gets past the page's initial
+    # load (Bandhan's _wait_for_boot) has hit a load timeout, not a
+    # structural site change: the markup it wants may well still be there,
+    # it just did not arrive in time -- routinely what happens when several
+    # browser sessions are driven at once.
+    r"never finished loading|"
     r"\b[45]\d{2}\b.*(status|error)|status.*\b[45]\d{2}\b",
     re.IGNORECASE,
 )
@@ -204,6 +258,33 @@ def classify_unavailable_message(message: str, *, period: str, today: date, lag_
     if _is_recent(period, today=today, lag_months=lag_months):
         return NOT_YET_PUBLISHED, f"Recent period, not yet published by the AMC (checked {today.isoformat()}): {message}"
     return NO_DATA, f"AMC reported no portfolio disclosure for this period: {message}"
+
+
+def looks_like_no_data(message: str) -> bool:
+    """True if ``message`` is an adapter saying "checked, nothing for this period".
+
+    ~45 of the 52 verified adapters signal that with a plain RuntimeError
+    naming the period ("HDFC listing has no current monthly workbook for
+    2019-04") rather than PeriodUnavailable, so the shape of the message is
+    the only thing available to go on.
+
+    The three exclusions matter as much as the two matches. A genuine
+    failure can easily satisfy both patterns by accident -- an HTTP error
+    or a saved error page carries the period in its message too, and the
+    word "no" appears in almost any English sentence -- and reading one of
+    those as NO_DATA is the worst mistake this tool can make: it records a
+    month the AMC really does publish as one it doesn't, and the resume
+    shortcut then treats that answer as settled and never retries it.
+    Losing data silently beats nothing, so anything that already looks like
+    a structural, transport, or file-integrity failure is never eligible.
+    """
+    return bool(
+        _PERIOD_SHAPE_RE.search(message)
+        and _NO_DATA_WORDS_RE.search(message)
+        and not _SITE_CHANGED_RE.search(message)
+        and not _HTTP_ERROR_RE.search(message)
+        and not _INVALID_FILE_RE.search(message)
+    )
 
 
 def classify_failure(returncode: int, output: str, message: str) -> tuple[str, str]:
@@ -292,6 +373,24 @@ def _discovery_info(period_dir: Path | None) -> tuple[str, str]:
     return source_page, download_url
 
 
+def _display_path(path: Path) -> str:
+    """The manifest's file_path value: repo-relative when it can be.
+
+    AMC_OUTPUT_DIR may point anywhere -- an external disk, a shared mount,
+    a scratch directory -- and Path.relative_to() raises rather than
+    falling back to an absolute path when the target is outside ROOT. That
+    ValueError used to escape run_one, and since every cell was submitted
+    straight to the pool it came back out of the future's result() and
+    ended the entire range: one unlucky output directory abandoned every
+    remaining (amc, month) even though the download it was reporting had
+    just succeeded.
+    """
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def _still_has_files(period_dir: Path | None) -> bool:
     if period_dir is None or not period_dir.is_dir():
         return False
@@ -301,7 +400,7 @@ def _still_has_files(period_dir: Path | None) -> bool:
     return False
 
 
-def run_one(
+def _attempt_one(
     amc_display: str,
     amc_slug: str,
     script: Path,
@@ -313,11 +412,16 @@ def run_one(
     today: date,
     lag_months: int,
 ) -> dict:
+    """Run one (amc, period) cell exactly once, no retrying. See run_one()."""
     year, month = period[:4], period[5:7]
     env = os.environ.copy()
     env["AMC_PERIOD"] = period
-    if discover_only:
-        env["AMC_DOWNLOAD"] = "false"
+    # Set explicitly in both directions rather than only for --discover-only.
+    # AMC_DOWNLOAD is read from .env by every adapter (core/config.py), so an
+    # inherited AMC_DOWNLOAD=false silently turned a full download run into a
+    # discovery run: run_cli still exits 0 having downloaded nothing, and
+    # every cell was recorded SUCCESS with no file behind it.
+    env["AMC_DOWNLOAD"] = "false" if discover_only else "true"
 
     row = {
         "amc": amc_display, "year": year, "month": month,
@@ -349,7 +453,7 @@ def run_one(
         row["status"] = SUCCESS
         row["description"] = "Discovered successfully (not downloaded: --discover-only)" if discover_only else "Downloaded and validated successfully"
         if period_dir is not None:
-            row["file_path"] = str(period_dir.relative_to(ROOT))
+            row["file_path"] = _display_path(period_dir)
         return row
 
     if proc.returncode == 2:
@@ -363,7 +467,7 @@ def run_one(
         row["description"] = f"File(s) discovered but download/validation did not complete: {reason}"
         row["error"] = reason[:500]
         if period_dir is not None:
-            row["file_path"] = str(period_dir.relative_to(ROOT))
+            row["file_path"] = _display_path(period_dir)
         return row
 
     if proc.returncode == 7:
@@ -371,7 +475,7 @@ def run_one(
         row["description"] = f"Downloaded file failed integrity/content checks: {reason}"
         row["error"] = reason[:500]
         if period_dir is not None:
-            row["file_path"] = str(period_dir.relative_to(ROOT))
+            row["file_path"] = _display_path(period_dir)
         return row
 
     if proc.returncode == 9:
@@ -384,14 +488,14 @@ def run_one(
         row["status"] = SUCCESS
         row["description"] = f"Downloaded successfully (truncated by AMC_MAX_FILES config): {reason}"
         if period_dir is not None:
-            row["file_path"] = str(period_dir.relative_to(ROOT))
+            row["file_path"] = _display_path(period_dir)
         return row
 
     # Anything else (exit 1: uncaught exception) needs its message classified.
-    # ~45 of the 53 verified adapters signal "not available" with a plain
+    # ~45 of the 52 verified adapters signal "not available" with a plain
     # RuntimeError instead of PeriodUnavailable (see this file's module
     # docstring) -- the period-shaped message pattern is what catches those.
-    if _PERIOD_SHAPE_RE.search(reason) and _NO_DATA_WORDS_RE.search(reason) and not _SITE_CHANGED_RE.search(reason):
+    if looks_like_no_data(reason):
         status, description = classify_unavailable_message(reason, period=period, today=today, lag_months=lag_months)
         row["status"] = status
         row["description"] = description
@@ -402,6 +506,123 @@ def run_one(
     row["description"] = description
     row["error"] = reason[:500] or output[-500:]
     return row
+
+
+def run_one(
+    amc_display: str,
+    amc_slug: str,
+    script: Path,
+    period: str,
+    *,
+    output_root: Path,
+    discover_only: bool,
+    timeout: int,
+    today: date,
+    lag_months: int,
+    retries: int = 3,
+    retry_delay: float = 3.0,
+) -> dict:
+    """Run one (amc, period) cell, retrying failures that look transient.
+
+    ``retries`` is the number of *extra* attempts after the first, so the
+    default of 3 means up to 4 total tries. Only statuses in
+    _RETRYABLE_STATUSES are retried -- SUCCESS/ALREADY_EXISTS need no
+    retry, and NO_DATA/YEAR_NOT_AVAILABLE/MONTH_NOT_AVAILABLE/
+    NOT_YET_PUBLISHED are a confirmed "checked, nothing published" answer,
+    not a failure, so retrying those would just hammer the AMC's site for
+    the same negative result.
+    """
+    attempt = 1
+    row = _attempt_one(
+        amc_display, amc_slug, script, period,
+        output_root=output_root, discover_only=discover_only,
+        timeout=timeout, today=today, lag_months=lag_months,
+    )
+    while row["status"] in _RETRYABLE_STATUSES and attempt <= retries:
+        attempt += 1
+        if retry_delay:
+            time.sleep(retry_delay)
+        row = _attempt_one(
+            amc_display, amc_slug, script, period,
+            output_root=output_root, discover_only=discover_only,
+            timeout=timeout, today=today, lag_months=lag_months,
+        )
+    if attempt > 1:
+        row = dict(row)
+        row["description"] = f"{row['description']} [attempt {attempt}/{retries + 1}]"
+    return row
+
+
+def _run_amc_periods(
+    cells: list[tuple[str, str, str, tuple[str, str, str]]],
+    script: Path,
+    results: "queue.Queue",
+    *,
+    output_root: Path,
+    discover_only: bool,
+    timeout: int,
+    today: date,
+    lag_months: int,
+    amc_delay: float,
+    retries: int = 3,
+    retry_delay: float = 3.0,
+) -> None:
+    """Run every period of ONE AMC, strictly one at a time.
+
+    Concurrency is across AMCs, never within one. The scheduling this
+    replaces threw every (amc, period) cell into one pool, and because that
+    cell list is built AMC-major the workers always clustered: six workers
+    meant six simultaneous requests to a single site, sustained across all
+    120 months of the range. That is the range layer's own doing -- no
+    adapter was ever verified against it, each was verified one month at a
+    time -- and it is what several of the recorded failures look like
+    (HDFC's Akamai wall returning 403 for 110 of its 120 cells; Bandhan's
+    "dropdowns never finished loading", a 20s in-page load timeout, on 12).
+
+    Honesty about the evidence: neither symptom could be reproduced on
+    demand afterwards. HDFC's listing page returned 200 to 24 requests
+    six-at-a-time and to 24 requests a second apart alike, so this
+    scheduler's peak rate alone does not trip it and that block was more
+    likely accumulated over a whole run (HDFC re-fetches the listing every
+    cell, plus ~100 file-host probes per back month). Bandhan times out
+    whether or not anything else is running -- it drives a real browser
+    over ~80 schemes and simply needs minutes per cell. So this is a
+    reduction in peak per-site load, not a proven fix for either.
+
+    What it does guarantee is that every site sees the same request pattern
+    the single-month runner has always produced, which is the only pattern
+    any of this has been verified against, at unchanged total process
+    concurrency.
+
+    The cost is real and worth stating: the slowest single AMC now sets the
+    floor on total wall clock. Bandhan at a few minutes a cell is roughly
+    six times slower to walk 120 months this way than when six workers
+    shared its cells. Raise --workers to put more AMCs in flight; that is
+    the knob that buys back throughput without pointing more than one
+    request at a time at any one site.
+
+    Every cell reports exactly one row onto ``results``, including one that
+    raises: a single bad cell must never cost the rest of this AMC's range.
+    """
+    for index, (amc_display, amc_slug, period, key) in enumerate(cells):
+        if index and amc_delay:
+            time.sleep(amc_delay)
+        try:
+            row = run_one(
+                amc_display, amc_slug, script, period,
+                output_root=output_root, discover_only=discover_only,
+                timeout=timeout, today=today, lag_months=lag_months,
+                retries=retries, retry_delay=retry_delay,
+            )
+        except BaseException as exc:  # noqa: BLE001 -- reported, never raised on
+            row = {
+                "amc": amc_display, "year": key[1], "month": key[2],
+                "status": UNKNOWN_ERROR,
+                "description": f"Runner itself failed for this cell: {type(exc).__name__}: {exc}",
+                "source_page": "", "download_url": "", "file_path": "",
+                "error": f"{type(exc).__name__}: {exc}"[:500],
+            }
+        results.put((key, row))
 
 
 def _load_existing(manifest_path: Path) -> dict[tuple[str, str, str], dict]:
@@ -445,6 +666,17 @@ def _rollup_year_status(rows: dict[tuple[str, str, str], dict]) -> dict[tuple[st
         by_amc[amc][int(year)][int(month)] = row
 
     out: dict[tuple[str, str, str], dict] = dict(rows)
+
+    # A previous run may have collapsed a year into one month="--" row. Any
+    # year that has per-month rows again has been re-run since, so that
+    # collapsed row is stale -- and left in place it survives alongside the
+    # 12 fresh rows, double-counting the year in the manifest and in the
+    # status totals. Drop it up front; the collapse below re-adds it if it
+    # still applies, and does not if the year turned out to be reachable
+    # after all.
+    for amc, years in by_amc.items():
+        for year in years:
+            out.pop((amc, str(year), "--"), None)
 
     for amc, years in by_amc.items():
         reachable_years = {
@@ -528,7 +760,30 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--force", action="store_true", help="Re-run cells already recorded as SUCCESS/ALREADY_EXISTS")
     parser.add_argument("--lag-months", type=int, default=2, help="Recent months within this window are NOT_YET_PUBLISHED instead of NO_DATA when unavailable")
     parser.add_argument("--timeout", type=int, default=None, help="Per (amc, period) subprocess timeout, seconds (default: AMC_PROCESS_TIMEOUT or 600)")
-    parser.add_argument("--workers", type=int, default=6, help="Concurrent subprocesses")
+    parser.add_argument(
+        "--workers", type=int, default=6,
+        help="How many AMCs to work on at once. Periods within one AMC always run "
+             "one at a time (see _run_amc_periods), so this is also the total "
+             "number of concurrent subprocesses.",
+    )
+    parser.add_argument(
+        "--amc-delay", type=float, default=1.0,
+        help="Seconds to wait between consecutive periods of the same AMC (default: 1.0). "
+             "Set to 0 to disable.",
+    )
+    parser.add_argument(
+        "--retries", type=int, default=3,
+        help="Extra attempts for a cell that fails with a retryable status "
+             "(DOWNLOAD_FAILED/HTTP_ERROR/SITE_CHANGED/INVALID_FILE/"
+             "DISCOVERY_FAILED/UNKNOWN_ERROR), on top of the first try "
+             "(default: 3, i.e. up to 4 total attempts). Confirmed "
+             "not-available answers (NO_DATA/*_NOT_AVAILABLE/"
+             "NOT_YET_PUBLISHED) are never retried.",
+    )
+    parser.add_argument(
+        "--retry-delay", type=float, default=3.0,
+        help="Seconds to wait before re-attempting a failed cell (default: 3.0).",
+    )
     parser.add_argument("--manifest", default="outputs/portfolio_manifest.csv")
     args = parser.parse_args(argv)
 
@@ -537,13 +792,25 @@ def main(argv: list[str] | None = None) -> int:
     today = date.today()
 
     scripts = {p.stem: p for p in VERIFIED_DIR.glob("*.py")}
+    if not scripts:
+        parser.error(f"no downloader scripts found in {VERIFIED_DIR}")
+    # Checked up front: an unrecognised stem used to surface as a KeyError
+    # from deep inside the scheduling loop, after the manifest had already
+    # been read and part of the range planned.
+    unknown = sorted(set(args.amc or ()) - set(scripts))
+    if unknown:
+        parser.error(
+            f"unknown --amc script stem(s): {', '.join(unknown)}. "
+            f"Expected one of the {len(scripts)} file stems in {VERIFIED_DIR}, e.g. {sorted(scripts)[0]}"
+        )
     amc_stems = sorted(args.amc) if args.amc else sorted(scripts)
     periods = month_range(args.start_year, args.end_year)
     manifest_path = ROOT / args.manifest
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     rows = _load_existing(manifest_path)
 
-    jobs = []
+    # Grouped by AMC, not a flat list of cells: see _run_amc_periods.
+    jobs_by_amc: dict[str, list[tuple[str, str, str, tuple[str, str, str]]]] = defaultdict(list)
     shortcuts: dict[tuple[str, str, str], dict] = {}
     for stem in amc_stems:
         amc_display = _amc_display_name(stem)
@@ -580,37 +847,54 @@ def main(argv: list[str] | None = None) -> int:
                     shortcuts[key] = shortcut
                     continue
 
-            jobs.append((amc_display, amc_slug, stem, period, key))
+            jobs_by_amc[stem].append((amc_display, amc_slug, period, key))
 
+    total_jobs = sum(len(cells) for cells in jobs_by_amc.values())
     total_cells = len(amc_stems) * len(periods)
     print(
         f"amcs={len(amc_stems)} periods={len(periods)} ({args.start_year}..{args.end_year}) "
-        f"total_cells={total_cells} to_run={len(jobs)} already_resolved={len(shortcuts)} "
-        f"discover_only={args.discover_only}"
+        f"total_cells={total_cells} to_run={total_jobs} already_resolved={len(shortcuts)} "
+        f"discover_only={args.discover_only} workers={args.workers} amc_delay={args.amc_delay} "
+        f"retries={args.retries} retry_delay={args.retry_delay}"
     )
 
     rows.update(shortcuts)
 
     start = time.time()
     done = 0
+    results: queue.Queue = queue.Queue()
+
+    def _worker(stem: str) -> None:
+        _run_amc_periods(
+            jobs_by_amc[stem], scripts[stem], results,
+            output_root=output_root, discover_only=args.discover_only,
+            timeout=timeout, today=today, lag_months=args.lag_months,
+            amc_delay=args.amc_delay, retries=args.retries, retry_delay=args.retry_delay,
+        )
+
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = {
-            pool.submit(
-                run_one, amc_display, amc_slug, scripts[stem], period,
-                output_root=output_root, discover_only=args.discover_only,
-                timeout=timeout, today=today, lag_months=args.lag_months,
-            ): key
-            for amc_display, amc_slug, stem, period, key in jobs
-        }
-        for fut in as_completed(futures):
-            key = futures[fut]
-            result = fut.result()
+        futures = [pool.submit(_worker, stem) for stem in sorted(jobs_by_amc)]
+        pending = total_jobs
+        while pending:
+            try:
+                key, result = results.get(timeout=1.0)
+            except queue.Empty:
+                # _run_amc_periods reports every cell it is given, so this
+                # only trips if a worker died in a way it could not catch.
+                # Stop waiting rather than hang the whole run forever.
+                if all(future.done() for future in futures) and results.empty():
+                    print(f"warning: {pending} cell(s) never reported a result", flush=True)
+                    break
+                continue
+            pending -= 1
             rows[key] = result
             done += 1
-            if done % 25 == 0 or done == len(jobs):
+            if done % 25 == 0 or done == total_jobs:
                 _write_manifest(manifest_path, _rollup_year_status(rows))
             elapsed = time.time() - start
-            print(f"[{done:5}/{len(jobs)}] [{elapsed:7.1f}s] {result['amc']:35} {key[1]}-{key[2]}  {result['status']:20} {result['description'][:60]}", flush=True)
+            print(f"[{done:5}/{total_jobs}] [{elapsed:7.1f}s] {result['amc']:35} {key[1]}-{key[2]}  {result['status']:20} {result['description'][:60]}", flush=True)
+        for future in futures:
+            future.result()
 
     rows = _rollup_year_status(rows)
     _write_manifest(manifest_path, rows)
