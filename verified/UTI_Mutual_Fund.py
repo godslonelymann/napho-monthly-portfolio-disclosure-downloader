@@ -4,7 +4,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import unquote, urlencode
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -23,7 +23,12 @@ PAGE_URL = "https://www.utimf.com/downloads/consolidate-all-portfolio-disclosure
 
 
 def _is_consolidated_portfolio(url: str) -> bool:
-    return bool(re.search(r"scheme[_% -]*portfolios?|consolidat(?:e|ed)[_% -]*portfolio", url, re.I))
+    # URL-decode first: 2024's filenames use "SCHEME%20PORTFOLIOS" (percent-
+    # encoded space) where 2025's use "scheme_portfolios" -- matching the raw
+    # string missed the former since "%20" isn't in the separator class below.
+    # "schemes?" (not just "scheme") because some months are plural: "UTI MF
+    # SCHEMES PORTFOLIOS AS OF 29.02.2024.zip".
+    return bool(re.search(r"schemes?[_% -]*portfolios?|consolidat(?:e|ed)[_% -]*portfolio", unquote(url), re.I))
 
 
 def discover(period: str, session=None):

@@ -49,6 +49,25 @@ def discover(period: str, session=None):
         if not period_conflicts(url, period) and period_matches(url, period):
             documents.append(document_from_link(amc=AMC, period=period, source_page_url=PAGE_URL, link=url))
     documents = only_period(dedupe_documents(documents), period)
+    # Some months list the same scheme twice under two different CMS paths --
+    # a legacy "funddetail-downloads" tree and a newer "scheme-disclosures"
+    # tree -- e.g. two distinct URLs both named
+    # "monthly-portfolio-report-union-arbitrage-fund-31.10.2022.xlsx",
+    # verified to be byte-identical downloads. dedupe_documents() above only
+    # dedupes by exact URL, so both survive and would otherwise collide in
+    # core.cli.download_documents's same-destination-filename guard. Keeping
+    # the first (the site lists newest CMS entries first) per destination
+    # filename resolves that without weakening the guard, which still needs
+    # to catch genuinely different files sharing a name (e.g. NJ Mutual
+    # Fund's viewfile.php).
+    seen_filenames: set[str] = set()
+    deduped = []
+    for document in documents:
+        if document.filename in seen_filenames:
+            continue
+        seen_filenames.add(document.filename)
+        deduped.append(document)
+    documents = deduped
     if not documents:
         raise RuntimeError(f"Union page has no monthly portfolio workbook for {period}")
     return documents

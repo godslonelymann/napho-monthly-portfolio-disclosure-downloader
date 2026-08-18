@@ -77,7 +77,14 @@ def _validate_magic(path: Path, document: Document) -> None:
     # file falls through every branch below and gets no validation at all.
     if suffix in {"xlsx", "xlsm", "xlsb", "zip"} and not data.startswith(b"PK"):
         raise RuntimeError(f"{document.url} did not return a ZIP/XLSX payload")
-    if suffix == "xls" and not (data.startswith(b"PK") or data.startswith(b"\xd0\xcf\x11\xe0")):
+    # SpreadsheetML 2003 (an XML dialect, optionally BOM-prefixed) is also a
+    # legitimate ".xls" payload -- e.g. Navi serves some months as
+    # "\xef\xbb\xbf<?xml ...", which isn't PK/OLE2 but isn't corrupt either.
+    if suffix == "xls" and not (
+        data.startswith(b"PK")
+        or data.startswith(b"\xd0\xcf\x11\xe0")
+        or data.lstrip(b"\xef\xbb\xbf").startswith(b"<?xml")
+    ):
         raise RuntimeError(f"{document.url} did not return an XLS/XLSX payload")
     if not data:
         raise RuntimeError(f"{document.url} returned an empty payload")

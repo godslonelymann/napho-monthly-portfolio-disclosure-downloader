@@ -18,7 +18,7 @@ import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-WORKBOOK_SUFFIXES = {".xls", ".xlsx", ".xlsm", ".csv"}
+WORKBOOK_SUFFIXES = {".xls", ".xlsx", ".xlsm", ".xlsb", ".csv"}
 ARCHIVE_SUFFIXES = {".zip"}
 _IGNORED_BASENAMES = {".ds_store"}
 _IGNORED_PREFIXES = ("__macosx/",)
@@ -90,7 +90,7 @@ def _check_bomb_limits(members: list[zipfile.ZipInfo]) -> None:
 
 def _validate_workbook_magic(data: bytes, suffix: str) -> bool:
     # Mirrors core.cli._validate_magic's rules for the same file types.
-    if suffix in {".xlsx", ".xlsm"}:
+    if suffix in {".xlsx", ".xlsm", ".xlsb"}:
         return data.startswith(b"PK")
     if suffix == ".xls":
         return data.startswith(b"PK") or data.startswith(b"\xd0\xcf\x11\xe0")

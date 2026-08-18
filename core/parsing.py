@@ -93,10 +93,25 @@ FILE_URL_RE = re.compile(
 )
 
 
-def extract_file_urls(markup: str, base_url: str = "") -> list[str]:
-    """Extract file URLs, preserving literal spaces in filenames."""
+_HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
 
-    text = html_module.unescape(markup).replace("\\/", "/").replace("\\u002F", "/")
+
+def extract_file_urls(markup: str, base_url: str = "") -> list[str]:
+    """Extract file URLs, preserving literal spaces in filenames.
+
+    HTML comments are stripped first -- unlike extract_links() (which parses
+    real tags via HTMLParser and never sees inside a comment), this scans the
+    raw markup with a regex, so a commented-out tag's quoted attribute value
+    is just as visible to it as a live one. PPFAS leaves a stale
+    ``<!-- <meta http-equiv="refresh" content="2; URL=....xls"> -->`` in its
+    page head; without stripping, that "2; URL=...xls" content string got
+    extracted as if it were a real link, and urljoin() mangled it further
+    (it doesn't start with a scheme) into a bogus URL that collided with the
+    genuine, live copy of the same file found elsewhere on the page.
+    """
+
+    text = _HTML_COMMENT_RE.sub("", markup)
+    text = html_module.unescape(text).replace("\\/", "/").replace("\\u002F", "/")
     urls: list[str] = []
     for match in FILE_URL_RE.finditer(text):
         value = match.group(2).strip()

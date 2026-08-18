@@ -44,6 +44,16 @@ def discover(period: str, session=None):
             if not url or period_conflicts(title, period) or not period_matches(title, period):
                 continue
             page_matches += 1
+            # The API's URL field is inconsistently root-relative: most
+            # records start with "/", but some omit it (e.g. "docs/default-
+            # source/..." instead of "/docs/default-source/..."), and
+            # urljoin() resolves those against PAGE_URL's own path
+            # ("/downloads/portfolio") instead of the site root, producing a
+            # 404-shaped "/downloads/docs/..." URL that still 200s with the
+            # site's SPA shell. Forcing a leading slash makes every record
+            # resolve the same way regardless of which form the API sent.
+            if not url.startswith(("http://", "https://", "/")):
+                url = "/" + url
             documents.append(document_from_link(amc=AMC, period=period, source_page_url=PAGE_URL, link=urljoin(PAGE_URL, url), label=title, primary=True))
         # The listing is sorted newest-first (verified by inspecting the raw
         # feed), so once a full page turns up no matches after we've already
