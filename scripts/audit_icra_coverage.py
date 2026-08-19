@@ -688,11 +688,15 @@ MANUAL_PREFIXES: dict[str, list[str]] = {
 # a straightforward slug comparison.
 MANUAL_AMC_MAP = {
     "wealth_company": "The Wealth Company Mutual Fund",
-    # slug() strips all non-alphanumerics, so "bandhan/monthly" collapses to
-    # "bandhanmonthly" -- nothing close enough to "bandhanmutualfund" for the
-    # fuzzy startswith match below to accept, hence explicit entries here.
+    # slug() strips all non-alphanumerics, so "bandhan/monthly-half-yearly"
+    # collapses to "bandhanmonthlyhalfyearly" -- nothing close enough to
+    # "bandhanmutualfund" for the fuzzy startswith match below to accept,
+    # hence explicit entries here. Named after each source page's own URL
+    # path segment (see verified/Bandhan_Mutual_Fund.py): the per-scheme
+    # disclosure page is ".../scheme-portfolios/monthly-half-yearly", the
+    # consolidated summary page is ".../portfolio-summary/monthly".
+    "bandhan/monthly-half-yearly": "Bandhan Mutual Fund",
     "bandhan/monthly": "Bandhan Mutual Fund",
-    "bandhan/debt_summary": "Bandhan Mutual Fund",
 }
 
 
@@ -1590,8 +1594,8 @@ def audit(args: argparse.Namespace) -> int:
             amc_dirs.append(d.name)
             continue
         # No period folder directly inside -- check one level deeper. This
-        # is how Bandhan organises data/raw/bandhan/ into monthly/ and
-        # debt_summary/ subfolders (two structurally different kinds of
+        # is how Bandhan organises data/raw/bandhan/ into monthly-half-yearly/
+        # and monthly/ subfolders (two structurally different kinds of
         # workbook that both belong to the same AMC), each holding its own
         # <period>/ folder. Every other AMC's period folder sits directly
         # inside its AMC folder and matches the branch above, so this is a

@@ -394,5 +394,203 @@ class SchemeReportTests(unittest.TestCase):
         self.assertEqual(summary["not_published"], ["Bandhan Gilt Fund"])
 
 
+def _summary_row(*, name: str, urls: list[str], month: str = "January") -> dict:
+    return {
+        "title": name,
+        "acf_fields": {
+            "month": month,
+            "document_name": name,
+            "disclosure_files": [{"url": url} for url in urls],
+        },
+    }
+
+
+class SummaryKindTests(unittest.TestCase):
+    # Real basenames observed live from downloads/portfolio-summary/monthly
+    # -- both 2025-01 rows below share the exact same document_name
+    # ("Bandhan Debt Fund Portfolio as on 31-jan-2025"), so the kind must
+    # come from the URL, not the label, or the two workbooks collide.
+    def test_an_equity_hybrid_workbook_is_recognised_from_its_url_despite_a_debt_labelled_title(self):
+        url = (
+            "https://storage.googleapis.com/nonprod-static-assets/2026/05/"
+            "a2b3415e-bandhan-equity-hybrid-fund-portfolios-as-on-31-jan-2025.xlsx"
+        )
+        self.assertEqual(bandhan._summary_kind(url, "Bandhan Debt Fund Portfolio as on 31-jan-2025"), "equity_hybrid")
+
+    def test_a_debt_workbook_is_recognised_from_its_url(self):
+        url = (
+            "https://storage.googleapis.com/nonprod-static-assets/2026/05/"
+            "be06bade-bandhan-debt-fund-portfolios-as-on-31-jan-2025.xlsx"
+        )
+        self.assertEqual(bandhan._summary_kind(url, "Bandhan Debt Fund Portfolio as on 31-jan-2025"), "debt")
+
+    def test_debt_is_recognised_even_without_word_boundaries_in_the_slug(self):
+        url = (
+            "https://storage.googleapis.com/nonprod-static-assets/2026/05/"
+            "4268d487-bandhan-debtfundportfolioason-28-11-2025.xlsx"
+        )
+        self.assertEqual(bandhan._summary_kind(url, "Bandhan Debt Fund Portfolio as on 28-11-2025"), "debt")
+
+    def test_a_copy_suffixed_basename_is_still_recognised_as_debt(self):
+        url = (
+            "https://storage.googleapis.com/nonprod-static-assets/2026/05/"
+            "6cbdb928-bandhan-debt-fund-portfolio-as-on-30-04-2026-1.xlsx"
+        )
+        self.assertEqual(bandhan._summary_kind(url, "Bandhan Debt Fund Portfolio as on 30-04-2026"), "debt")
+
+    def test_arbitrage_is_recognised(self):
+        url = "https://storage.googleapis.com/nonprod-static-assets/2026/05/x-bandhan-arbitrage-fund-portfolios-31-jan-2025.xlsx"
+        self.assertEqual(bandhan._summary_kind(url, "x"), "arbitrage")
+
+    def test_an_unrecognised_url_falls_back_to_the_label(self):
+        self.assertEqual(bandhan._summary_kind("https://cms.example/", "Some Debt Workbook"), "debt")
+
+
+class SummaryRecordExtractionTests(unittest.TestCase):
+    def test_two_same_titled_rows_get_distinct_filenames_by_url_derived_kind(self):
+        # Real 2025-01 shape: identical document_name, different files.
+        payload = _payload(
+            [
+                _summary_row(
+                    name="Bandhan Debt Fund Portfolio as on 31-jan-2025",
+                    urls=["https://cms.example/a2b3415e-bandhan-equity-hybrid-fund-portfolios-as-on-31-jan-2025.xlsx"],
+                ),
+                _summary_row(
+                    name="Bandhan Debt Fund Portfolio as on 31-jan-2025",
+                    urls=["https://cms.example/be06bade-bandhan-debt-fund-portfolios-as-on-31-jan-2025.xlsx"],
+                ),
+            ]
+        )
+
+        records = bandhan.summary_records_from_payload(payload, "2025-01")
+
+        kinds = {record["kind"] for record in records}
+        filenames = {record["filename"] for record in records}
+        self.assertEqual(kinds, {"equity_hybrid", "debt"})
+        self.assertEqual(len(filenames), 2)
+        self.assertIn("bandhan_summary_equity_hybrid_2025-01.xlsx", filenames)
+        self.assertIn("bandhan_summary_debt_2025-01.xlsx", filenames)
+
+    def test_the_same_url_listed_twice_produces_one_record(self):
+        url = "https://cms.example/be06bade-bandhan-debt-fund-portfolios-as-on-31-jan-2025.xlsx"
+        payload = _payload(
+            [
+                _summary_row(name="Bandhan Debt Fund Portfolio as on 31-jan-2025", urls=[url, url]),
+            ]
+        )
+
+        records = bandhan.summary_records_from_payload(payload, "2025-01")
+
+        self.assertEqual([record["url"] for record in records], [url])
+
+    def test_a_row_dated_for_another_period_is_reported_not_saved_under_this_one(self):
+        payload = _payload(
+            [
+                _summary_row(
+                    name="Debt Fund Portfolios 31 December 2022",
+                    urls=["https://cms.example/debt-fund-portfolios-31-dec-2022.xlsx"],
+                    month="December",
+                )
+            ]
+        )
+        misfiled: list[dict] = []
+
+        records = bandhan.summary_records_from_payload(payload, "2020-12", misfiled)
+
+        self.assertEqual(records, [])
+        self.assertEqual(len(misfiled), 1)
+        self.assertEqual(misfiled[0]["document_period"], "2022-12")
+
+    def test_a_row_without_a_downloadable_file_is_ignored(self):
+        payload = _payload(
+            [
+                _summary_row(name="Debt Fund Portfolios 31 Jan 2025", urls=[]),
+            ]
+        )
+
+        self.assertEqual(bandhan.summary_records_from_payload(payload, "2025-01"), [])
+
+
+class SummaryCollectionTests(unittest.TestCase):
+    def test_every_page_of_a_multi_page_summary_listing_is_walked(self):
+        pages = {
+            1: _payload(
+                [_summary_row(name="Debt Fund Portfolios 31 Jan 2025", urls=["https://cms.example/a.xlsx"])],
+                max_pages=2,
+                current_page=1,
+            ),
+            2: _payload(
+                [_summary_row(name="Equity Hybrid Fund Portfolios 31 Jan 2025", urls=["https://cms.example/b.xlsx"])],
+                max_pages=2,
+                current_page=2,
+            ),
+        }
+        requested: list[int] = []
+
+        def fetch(period, page_number):
+            requested.append(page_number)
+            return pages[page_number]
+
+        _, records = bandhan.collect_summary_records(fetch, "2025-01")
+
+        self.assertEqual(requested, [1, 2])
+        self.assertEqual(sorted(record["url"] for record in records), ["https://cms.example/a.xlsx", "https://cms.example/b.xlsx"])
+
+    def test_a_no_posts_found_first_page_yields_no_records(self):
+        def fetch(period, page_number):
+            return {"status": "no_posts_found"}
+
+        first, records = bandhan.collect_summary_records(fetch, "2019-05")
+
+        self.assertEqual(records, [])
+        self.assertEqual(first["status"], "no_posts_found")
+
+
+class SummaryQueryTests(unittest.TestCase):
+    def test_the_summary_query_keeps_the_month_filter_unlike_the_per_scheme_query(self):
+        script = bandhan._summary_init_script("2025-01", 1)
+        payload = json.loads(script.split("const QUERY = ", 1)[1].split(";\n", 1)[0])
+
+        self.assertEqual(payload["type"], bandhan.SUMMARY_API_REQUEST_TYPE)
+        self.assertEqual(payload["data"]["financial_year"], "2025")
+        self.assertEqual(payload["data"]["month"], "January")
+        self.assertEqual(payload["data"]["posts_per_page"], bandhan.SUMMARY_PER_PAGE)
+
+    def test_the_summary_query_never_deletes_the_scheme_filter_keys(self):
+        # There is no scheme dropdown on the summary page, so unlike
+        # _INIT_SCRIPT_TEMPLATE, the summary hook must not strip
+        # acf_key1/acf_value1 -- it never sets them in the first place.
+        self.assertNotIn("acf_key1", bandhan._SUMMARY_INIT_SCRIPT_TEMPLATE)
+        self.assertNotIn("delete data.acf_key1", bandhan._SUMMARY_INIT_SCRIPT_TEMPLATE)
+
+
+class ExitCodeMergeTests(unittest.TestCase):
+    # __main__ itself isn't unit-testable without subprocessing, but the
+    # merge rule it implements is simple enough to pin down directly:
+    # PeriodUnavailable (2) from *both* legs is the only case that should
+    # read as an overall miss; any other non-zero code is a hard failure
+    # that must win; otherwise overall success.
+    def _merge(self, scheme_code: int, summary_code: int) -> int:
+        codes = (scheme_code, summary_code)
+        hard_failures = [code for code in codes if code not in (0, 2)]
+        if hard_failures:
+            return hard_failures[0]
+        if all(code == 2 for code in codes):
+            return 2
+        return 0
+
+    def test_both_legs_unavailable_is_an_overall_miss(self):
+        self.assertEqual(self._merge(2, 2), 2)
+
+    def test_one_leg_succeeding_is_an_overall_success(self):
+        self.assertEqual(self._merge(0, 2), 0)
+        self.assertEqual(self._merge(2, 0), 0)
+
+    def test_a_hard_failure_in_either_leg_wins(self):
+        self.assertEqual(self._merge(7, 0), 7)
+        self.assertEqual(self._merge(0, 9), 9)
+        self.assertEqual(self._merge(7, 2), 7)
+
+
 if __name__ == "__main__":
     unittest.main()

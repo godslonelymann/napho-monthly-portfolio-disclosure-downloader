@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import re
 import sys
 from pathlib import Path
@@ -46,14 +47,20 @@ def discover(period: str, session=None):
     documents = []
     for record in payload.get("data") or []:
         url = record.get("url")
-        title = record.get("title", "")
+        title = html.unescape(record.get("title", ""))
         if isinstance(url, list):
             urls = [item.get("link") for item in url if isinstance(item, dict) and item.get("link")]
         elif isinstance(url, str) and url:
             urls = [url]
         else:
             urls = []
-        for link in urls:
+        # Navi's REST API HTML-entity-encodes ampersands in file URLs (e.g.
+        # "Large &#038; Midcap" -> "...Large%20&#038;%20Midcap..."), unlike
+        # scraped-HTML links which core.parsing already unescapes. Left
+        # encoded, "&#038;" is sent to the file host literally and the
+        # request comes back 403.
+        for raw_link in urls:
+            link = html.unescape(raw_link)
             evidence = f"{title} {link}"
             if period_conflicts(evidence, period) or not period_matches(evidence, period):
                 continue

@@ -75,7 +75,9 @@ def _validate_magic(path: Path, document: Document) -> None:
     # .xlsb is binary *inside* the sheet parts but is still OOXML/ZIP packaging,
     # so it carries the same "PK" header as .xlsx.  Without it listed here the
     # file falls through every branch below and gets no validation at all.
-    if suffix in {"xlsx", "xlsm", "xlsb", "zip"} and not data.startswith(b"PK"):
+    if suffix in {"xlsx", "xlsm", "xlsb", "zip"} and not (
+        data.startswith(b"PK") or (suffix == "xlsx" and data.startswith(b"\xd0\xcf\x11\xe0"))
+    ):
         raise RuntimeError(f"{document.url} did not return a ZIP/XLSX payload")
     # SpreadsheetML 2003 (an XML dialect, optionally BOM-prefixed) is also a
     # legitimate ".xls" payload -- e.g. Navi serves some months as
@@ -84,6 +86,7 @@ def _validate_magic(path: Path, document: Document) -> None:
         data.startswith(b"PK")
         or data.startswith(b"\xd0\xcf\x11\xe0")
         or data.lstrip(b"\xef\xbb\xbf").startswith(b"<?xml")
+        or data.startswith((b"\x09\x00\x04\x00", b"\x09\x02\x06\x00", b"\x09\x04\x06\x00"))
     ):
         raise RuntimeError(f"{document.url} did not return an XLS/XLSX payload")
     if not data:

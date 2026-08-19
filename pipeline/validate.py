@@ -61,6 +61,7 @@ def _icra_rows_by_amfi(
                     "instrument": instr,
                     "corpus_per": corpus,
                     "mkt_value": mkt,
+                    "shares": shares,
                     "fund": fund,
                 }
             )

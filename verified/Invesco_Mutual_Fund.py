@@ -27,11 +27,22 @@ def discover(period: str, session=None):
     year = period.split("-")[0]
     month_key = month_name(period, abbreviated=True) + "Url"
     documents = []
+    errors = []
     for classification in CLASSIFICATIONS:
         api_url = BASE_URL + "?" + urlencode({"year": year, "classification": classification})
         try:
             payload = fetch_json(session, api_url, headers={"Referer": PAGE_URL, "Accept": "application/json"})
-        except Exception:
+        except Exception as exc:
+            # A failed classification call used to be swallowed here and
+            # treated the same as "this classification legitimately has
+            # nothing published" -- so a transient network hiccup or a
+            # temporary 500 from Invesco's API silently turned into "no
+            # portfolio disclosure for this period" for the whole month,
+            # and that false negative then stuck: NO_DATA is terminal and
+            # never automatically retried (see backfill_range.py's
+            # _RETRYABLE_STATUSES). Recording it and raising below instead
+            # keeps a real failure classified as retryable.
+            errors.append(f"{classification}: {exc}")
             continue
         for record in recursive_records(payload):
             text = json.dumps(record, ensure_ascii=False)
@@ -53,6 +64,11 @@ def discover(period: str, session=None):
                     documents.append(document_from_link(amc=AMC, period=period, source_page_url=PAGE_URL, link=url, label=text[:240]))
     documents = only_period(dedupe_documents(documents), period)
     if not documents:
+        if errors:
+            raise RuntimeError(
+                f"Invesco classifications API unreachable for {period} "
+                f"({len(errors)}/{len(CLASSIFICATIONS)} classifications failed): {'; '.join(errors)}"
+            )
         raise RuntimeError(f"Invesco classifications returned no monthly holding for {period}")
     return documents
 

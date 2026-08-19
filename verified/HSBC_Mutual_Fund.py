@@ -18,6 +18,11 @@ from core.periods import current_period, resolve_as_of_period
 AMC = "hsbc"
 PAGE_URL = "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources/information-library"
 EXCLUDED_PATHS = ("fortnightly-debt-portfolio", "weekly-fund-portfolios", "half-yearly-portfolios")
+# Filenames sitting directly under /portfolios/ that are excluded categories
+# in disguise -- they don't live under one of EXCLUDED_PATHS's own folders,
+# so that check alone doesn't catch them (e.g. ".../portfolios/half-yearly-
+# fortnightly-portfolio-of-debt-schemes-apr-2021.xlsx").
+EXCLUDED_FILENAME_TERMS = ("half-yearly", "fortnightly", "weekly")
 
 
 def discover(period: str, session=None):
@@ -33,15 +38,26 @@ def discover(period: str, session=None):
             continue
         if any(part in lowered for part in EXCLUDED_PATHS):
             continue
-        searchable = f"{text} {url}"
-        if "document-" not in lowered and "documents-" not in lowered and "monthly-portfolio" not in searchable.lower():
-            continue
         # HSBC's folder name is a publish date, not necessarily the as-of
         # date -- see resolve_as_of_period's docstring for why filename and
         # link text are each tried, in order, before the folder is trusted.
         path_parts = urlsplit(url).path.split("/")
         name = path_parts[-1] if path_parts else ""
         folder = path_parts[-2] if len(path_parts) >= 2 else ""
+        searchable = f"{text} {url}"
+        has_marker = "document-" in lowered or "documents-" in lowered or "monthly-portfolio" in searchable.lower()
+        if not has_marker:
+            # 2022's per-scheme monthly disclosures sit as flat files
+            # directly under /portfolios/ (e.g. "hsbc-arbitrage-fund-31-dec-
+            # 2022.xlsx"), with no "document-"/"documents-" batch folder and
+            # no "monthly-portfolio" wording anywhere -- HSBC only started
+            # using those markers after switching to per-date batch folders
+            # in 2023. Accept flat /portfolios/ files on that basis alone,
+            # but still keep out the other, non-monthly disclosures that are
+            # also filed there without their own subfolder (e.g. "half-
+            # yearly-fortnightly-portfolio-of-debt-schemes-apr-2021.xlsx").
+            if folder.lower() != "portfolios" or any(term in name.lower() for term in EXCLUDED_FILENAME_TERMS):
+                continue
         if resolve_as_of_period(name, text, folder, before=before) != period:
             continue
         documents.append(document_from_link(amc=AMC, period=period, source_page_url=PAGE_URL, link=url, label=text or None))

@@ -30,8 +30,6 @@ def discover(period: str, session=None):
         filename = unquote(Path(urlsplit(url).path).name)
         if not re.search(r"\.(?:xls|xlsx)(?:[?#]|$)", url, re.I) or "/otherfile/" not in url.lower():
             continue
-        if re.search(r"transaction", filename, re.I):
-            continue
         if not re.search(r"dashboard|portfolio.*monthly|monthly.*portfolio", filename, re.I):
             continue
         if extract_periods(filename) != {period}:

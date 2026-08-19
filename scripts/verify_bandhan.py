@@ -23,9 +23,11 @@ Five checks, cheapest first:
 4.  icra        -- every Bandhan scheme ICRA's universe expects for the
                    period matched to a downloaded file (via
                    scripts/audit_icra_coverage.py).
-5.  cross_check -- optional: if the older debt-only summary workbook
-                   (portfolio-summary/monthly) was also saved, every scheme
-                   it lists should also have its own per-scheme file.
+5.  cross_check -- optional: if the consolidated portfolio-summary
+                   workbook(s) (portfolio-summary/monthly -- debt, and
+                   equity/hybrid in months that publish one) were also
+                   saved, every scheme they list should also have its own
+                   per-scheme file.
 
 Usage::
 
@@ -51,8 +53,12 @@ sys.path.insert(0, str(ROOT))
 from core.periods import extract_periods  # noqa: E402
 
 AMC_SLUG = "bandhan"
-MONTHLY_SUBDIR = "monthly"
-DEBT_SUMMARY_SUBDIR = "debt_summary"
+# Named after each source page's own URL path segment (see
+# verified/Bandhan_Mutual_Fund.py): the per-scheme disclosure page is
+# ".../scheme-portfolios/monthly-half-yearly", the consolidated summary page
+# is ".../portfolio-summary/monthly".
+MONTHLY_SUBDIR = "monthly-half-yearly"
+SUMMARY_SUBDIR = "monthly"
 ICRA_AMC_NAME = "Bandhan Mutual Fund"
 MIN_FILE_BYTES = 1024
 
@@ -212,7 +218,7 @@ def _icra_resolved_names(period: str, raw_dir: Path, amc_dir_name: str, out_dir:
     """Run the same matching engine audit_icra_coverage.py uses on a given
     raw-data directory and return the ICRA fund names it resolved.
 
-    Used to compare the debt-summary workbook against the per-scheme
+    Used to compare the portfolio-summary workbook(s) against the per-scheme
     downloads by *meaning* rather than by raw sheet-title text: the debt
     workbook's sheet names are abbreviated ("Bandhan ON", "Bandhan CBF") in
     a way no simple string match survives, but audit_icra_coverage.py
@@ -242,27 +248,27 @@ def _icra_resolved_names(period: str, raw_dir: Path, amc_dir_name: str, out_dir:
 
 
 def check_cross_reference(period: str, raw_dir: Path, icra_matched: set[str]) -> Layer:
-    debt_summary_dir = raw_dir / AMC_SLUG / DEBT_SUMMARY_SUBDIR / period
-    candidates = list(debt_summary_dir.glob("*.xlsx")) if debt_summary_dir.exists() else []
+    summary_dir = raw_dir / AMC_SLUG / SUMMARY_SUBDIR / period
+    candidates = list(summary_dir.glob("*.xlsx")) if summary_dir.exists() else []
     if not candidates:
         return Layer(
             "cross_check", True,
-            "skipped -- no separate debt-summary workbook saved for this period "
+            "skipped -- no consolidated portfolio-summary workbook saved for this period "
             "(optional cross-check against https://bandhanmutual.com/downloads/portfolio-summary/monthly)",
         )
     try:
-        debt_names = _icra_resolved_names(
-            period, raw_dir, f"{AMC_SLUG}/{DEBT_SUMMARY_SUBDIR}", Path(tempfile.mkdtemp(prefix="bandhan_crosscheck_"))
+        summary_names = _icra_resolved_names(
+            period, raw_dir, f"{AMC_SLUG}/{SUMMARY_SUBDIR}", Path(tempfile.mkdtemp(prefix="bandhan_crosscheck_"))
         )
     except RuntimeError as exc:
-        return Layer("cross_check", False, f"could not audit the debt-summary workbook: {exc}")
+        return Layer("cross_check", False, f"could not audit the portfolio-summary workbook(s): {exc}")
 
-    if not debt_names:
-        return Layer("cross_check", True, "skipped -- debt-summary workbook resolved no ICRA schemes to compare")
+    if not summary_names:
+        return Layer("cross_check", True, "skipped -- portfolio-summary workbook(s) resolved no ICRA schemes to compare")
 
-    missing = sorted(debt_names - icra_matched)
+    missing = sorted(summary_names - icra_matched)
     passed = not missing
-    summary = f"{len(debt_names) - len(missing)}/{len(debt_names)} debt-summary schemes also matched among the per-scheme downloads"
+    summary = f"{len(summary_names) - len(missing)}/{len(summary_names)} portfolio-summary schemes also matched among the per-scheme downloads"
     return Layer("cross_check", passed, summary, {"missing": missing})
 
 

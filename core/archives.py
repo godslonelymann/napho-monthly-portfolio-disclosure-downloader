@@ -91,9 +91,21 @@ def _check_bomb_limits(members: list[zipfile.ZipInfo]) -> None:
 def _validate_workbook_magic(data: bytes, suffix: str) -> bool:
     # Mirrors core.cli._validate_magic's rules for the same file types.
     if suffix in {".xlsx", ".xlsm", ".xlsb"}:
-        return data.startswith(b"PK")
-    if suffix == ".xls":
+        # Some UTI legacy archives label an OLE2 .xls workbook as .xlsx.
+        # Excel and xlrd open it successfully based on content, so accept
+        # that recognizable workbook container instead of discarding the
+        # entire otherwise-valid monthly archive over the wrong extension.
         return data.startswith(b"PK") or data.startswith(b"\xd0\xcf\x11\xe0")
+    if suffix == ".xls":
+        # In addition to OLE2 and SpreadsheetML, very old Excel files can be
+        # a bare BIFF stream.  These are the BOF signatures for BIFF2/3/4;
+        # UTI's May 2019 dividend workbook is a valid BIFF2 example.
+        return (
+            data.startswith(b"PK")
+            or data.startswith(b"\xd0\xcf\x11\xe0")
+            or data.lstrip(b"\xef\xbb\xbf").startswith(b"<?xml")
+            or data.startswith((b"\x09\x00\x04\x00", b"\x09\x02\x06\x00", b"\x09\x04\x06\x00"))
+        )
     if suffix == ".csv":
         return True
     return False

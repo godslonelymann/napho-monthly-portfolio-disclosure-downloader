@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from urllib.parse import urljoin
@@ -85,7 +86,47 @@ def _fetch_records(session) -> list[dict]:
     return _records_from_payload(payload)
 
 
-def _documents_from_records(records: list[dict], period: str):
+_YEAR_TYPO_RE = re.compile(r"\b(20\d{2})(\d)\b")
+
+
+def _drop_duplicated_year_digit(url: str) -> str | None:
+    """Undo a specific typo the JM API's catalog sometimes has: a year like
+    "2018" followed by one extra digit that just repeats its own last digit
+    ("20188"). Confirmed against the live file host -- some entries in the
+    same monthly batch carry this typo and 404, while a sibling entry for
+    the same month has the correct un-typo'd filename and downloads fine.
+    """
+    def _fix(match: re.Match) -> str:
+        year, extra = match.group(1), match.group(2)
+        return year if extra == year[-1] else match.group(0)
+
+    fixed = _YEAR_TYPO_RE.sub(_fix, url)
+    return fixed if fixed != url else None
+
+
+def _resolve_url(session, url: str) -> str:
+    """Return whichever of ``url`` or its typo-corrected form the file host
+    actually serves. A broken filename here doesn't 404 -- the WAF answers
+    200 with the site's own homepage HTML, so a candidate is only trusted
+    once its Content-Type confirms an actual document.
+    """
+    candidates = [url]
+    variant = _drop_duplicated_year_digit(url)
+    if variant:
+        candidates.append(variant)
+    for candidate in candidates:
+        try:
+            response = session.get(candidate, stream=True, timeout=(10, 30))
+            content_type = response.headers.get("Content-Type", "")
+            response.close()
+            if response.status_code == 200 and "html" not in content_type.lower():
+                return candidate
+        except Exception:
+            continue
+    return url
+
+
+def _documents_from_records(records: list[dict], period: str, session):
     documents = []
     for record in records:
         if record["SubCategoryName"].strip().casefold() != _MONTHLY_SUBCATEGORY.casefold():
@@ -101,6 +142,7 @@ def _documents_from_records(records: list[dict], period: str):
                 f"JM Financial monthly catalog exposed unsupported file type {record['FileEXT']!r}"
             )
         url = urljoin(FILE_BASE_URL.rstrip("/") + "/", filename.lstrip("/"))
+        url = _resolve_url(session, url)
         documents.append(
             document_from_link(
                 amc=AMC,
@@ -124,7 +166,7 @@ def _documents_from_records(records: list[dict], period: str):
 
 def discover(period: str, session=None):
     active_session = session or _browser_ua_session()
-    documents = _documents_from_records(_fetch_records(active_session), period)
+    documents = _documents_from_records(_fetch_records(active_session), period, active_session)
     if not documents:
         raise PeriodUnavailable(f"JM Financial publishes no monthly portfolio for {period}")
     return documents

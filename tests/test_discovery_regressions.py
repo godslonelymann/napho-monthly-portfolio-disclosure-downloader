@@ -16,6 +16,7 @@ from verified import Motilal_Oswal_Mutual_Fund as motilal
 from verified import Old_Bridge_Mutual_Fund as old_bridge
 from verified import The_Wealth_Company_Mutual_Fund as wealth
 from verified import JM_Financial_Mutual_Fund as jm_financial
+from verified import UTI_Mutual_Fund as uti
 
 from Crypto.Cipher import AES
 
@@ -192,6 +193,109 @@ class DiscoveryRegressionTests(unittest.TestCase):
         with patch.object(old_bridge, "fetch_text", return_value="<html><body>No files</body></html>"):
             with self.assertRaisesRegex(RuntimeError, "no recognizable"):
                 old_bridge.discover("2026-06")
+
+    def test_uti_accepts_generic_and_misspelled_consolidated_archive_names(self):
+        cases = (
+            ("2025-01", "Fw_%20UTI%20MF%20PORTFOLIOS-%2031.01.2025.zip"),
+            ("2025-09", "fw_uti_mf_scheme_portfoliios_as_of_30.09.2025_1.zip"),
+            ("2025-11", "fw_uti_mf_portfolios_30.11.2025_1.zip"),
+        )
+        for period, filename in cases:
+            month = uti.month_name(period)
+            payload = {
+                "rows": [
+                    {
+                        "name": f"Consolidated Portfolio {month} {period[:4]}",
+                        "month": month,
+                        "year": period[:4],
+                        "category": "Consolidate portfolio disclosure",
+                        "url": f"https://cdn.example.test/uploads/{filename}",
+                    }
+                ]
+            }
+            with self.subTest(period=period), patch.object(uti, "fetch_json", return_value=payload):
+                documents = uti.discover(period, session=object())
+
+            self.assertEqual(len(documents), 1)
+            self.assertTrue(documents[0].url.endswith(filename))
+
+    def test_uti_keeps_legacy_pf_archive_and_separate_disclosure_workbooks(self):
+        payload = {
+            "rows": [
+                {
+                    "name": "futexposure NOV17",
+                    "month": "November",
+                    "year": "2017",
+                    "category": "Consolidate portfolio disclosure",
+                    "url": "https://cdn.example.test/futexposure_nov17.xlsx",
+                },
+                {
+                    "name": "div rate Oct Nov2017 final",
+                    "month": "November",
+                    "year": "2017",
+                    "category": "Consolidate portfolio disclosure",
+                    "url": "https://cdn.example.test/div_rate_oct_nov2017_final.xls",
+                },
+                {
+                    "name": "pf utimf Nov2017",
+                    "month": "November",
+                    "year": "2017",
+                    "category": "Consolidate portfolio disclosure",
+                    "url": "https://cdn.example.test/pf-utimf-nov2017.zip",
+                },
+            ]
+        }
+        with patch.object(uti, "fetch_json", return_value=payload):
+            documents = uti.discover("2017-11", session=object())
+
+        self.assertEqual(len(documents), 3)
+        self.assertEqual({document.file_type for document in documents}, {"xls", "xlsx", "zip"})
+        self.assertTrue(all(document.scheme is None for document in documents))
+
+    def test_uti_ignores_stale_duplicate_september_2017_row(self):
+        payload = {
+            "rows": [
+                {
+                    "name": "Consolidated Portfolio Discolsure September2017",
+                    "month": "September",
+                    "year": "2017",
+                    "category": "Consolidate portfolio disclosure",
+                    "url": "https://doc.utimf.com/healthy-september-2017.zip",
+                },
+                {
+                    "name": "pf utimf Sept 2017 091017",
+                    "month": "September",
+                    "year": "2017",
+                    "category": "Consolidate portfolio disclosure",
+                    "url": "documents/ConsolidatePortfolioDisclosure/pf-utimf-Sept 2017-091017.zip",
+                },
+            ]
+        }
+        with patch.object(uti, "fetch_json", return_value=payload):
+            documents = uti.discover("2017-09", session=object())
+
+        self.assertEqual(len(documents), 1)
+        self.assertEqual(documents[0].url, "https://doc.utimf.com/healthy-september-2017.zip")
+
+    def test_uti_replaces_catalogue_row_whose_filename_is_for_another_month(self):
+        payload = {
+            "rows": [
+                {
+                    "name": "Consolidated Portfolio October 2025",
+                    "month": "October",
+                    "year": "2025",
+                    "category": "Consolidate portfolio disclosure",
+                    "url": "https://cdn.example.test/2025-12/fw_uti_mf_portfolios_30.11.2025_0.zip",
+                }
+            ]
+        }
+        with patch.object(uti, "fetch_json", return_value=payload):
+            documents = uti.discover("2025-10", session=object())
+
+        self.assertEqual(len(documents), 1)
+        self.assertIn("31.10.2025", documents[0].filename)
+        self.assertNotIn("30.11.2025", documents[0].filename)
+        self.assertTrue(documents[0].metadata["catalogue_correction"])
 
 
 if __name__ == "__main__":

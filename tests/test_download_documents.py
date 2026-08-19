@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from core.cli import DownloadOutcome, download_documents
+from core.archives import _validate_workbook_magic
 from core.discovery import Document
 
 
@@ -216,6 +217,13 @@ class DownloadDocumentsTests(unittest.TestCase):
             download_documents(session, [doc_a, doc_b], self.output_root, continue_on_error=True)
 
         self.assertEqual(session.requested_urls, [])
+
+    def test_legacy_excel_magic_used_by_uti_archives_is_accepted(self):
+        ole2 = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+        raw_biff2 = b"\x09\x00\x04\x00\x07\x00\x10\x00"
+
+        self.assertTrue(_validate_workbook_magic(ole2, ".xlsx"))
+        self.assertTrue(_validate_workbook_magic(raw_biff2, ".xls"))
 
 
 class PerDocumentRetryTests(unittest.TestCase):

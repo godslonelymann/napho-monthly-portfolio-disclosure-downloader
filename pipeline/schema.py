@@ -2,10 +2,29 @@
 
 from __future__ import annotations
 
+import calendar
 import csv
+import re
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any, Iterable
+
+_PERIOD_RE = re.compile(r"(\d{4})-(\d{2})")
+
+
+def month_end_date(period: str) -> str:
+    """"YYYY-MM" (a raw/<amc>/<period> folder name) -> ISO month-end date.
+
+    Every AMC's monthly portfolio is "as on" the last calendar day of the
+    period, regardless of when the file itself was published.
+    """
+    m = _PERIOD_RE.search(period)
+    if not m:
+        raise ValueError(f"Not a YYYY-MM period: {period!r}")
+    year, month = int(m.group(1)), int(m.group(2))
+    last_day = calendar.monthrange(year, month)[1]
+    return f"{year:04d}-{month:02d}-{last_day:02d}"
+
 
 # Raw values, no conversions. This is the contract that keeps 52 separate
 # AMC parsers from drifting apart: each parser only ever produces these
@@ -23,18 +42,18 @@ INTERMEDIATE_FIELDS = [
     "quantity",
     "market_value_raw",
     "pct_raw",
+    "port_date",
 ]
 
-# ICRA_Sample.xlsx's "Portfolio Data_MonYYYY" sheet, minus Port_Date.
-#
-# ICRA's sheet has 13 columns; we deliberately emit 12. Port_Date is dropped
-# because every row in a given run carries the identical value (the period's
-# month-end) and the period is already on the output path
-# (data/parsed/<amc>/<period>.csv). Consequence to keep in mind: rows here
-# do NOT identify their own month, so concatenating several periods into one
-# table loses that distinction — re-add Port_Date first if that's ever done.
+# ICRA_Sample.xlsx's "Portfolio Data_MonYYYY" sheet, per
+# ICRA_CONVERSION_PLAN.md's 14-column output: ICRA's 13 columns, plus
+# Security_Name. Port_Date is a real date (2026-05-31), not "2026-05".
+# Basic_Industry / Industry / Sector_Name / Macro_Economic_Sector are
+# always blank — classification only ever fills Instrument_Name /
+# Nature_Name (see pipeline/isin_type.py).
 FINAL_FIELDS = [
     "AMFI Code",
+    "Port_Date",
     "ISIN",
     "Instrument_Name",
     "Nature_Name",
@@ -46,7 +65,12 @@ FINAL_FIELDS = [
     "Mkt_Value",
     "No_Of_Shares",
     "Fund_Name",
+    "Security_Name",
 ]
+
+# Audit-only, not part of ICRA's shape: which source filled Security_Name
+# (harvest / variant / blank) — see pipeline/convert.py.
+AUDIT_FIELDS = ["Name_Source"]
 
 
 @dataclass
@@ -62,6 +86,7 @@ class IntermediateRow:
     quantity: Any
     market_value_raw: Any
     pct_raw: Any
+    port_date: str  # ISO date, e.g. "2026-05-31" — the period this file covers
 
 
 def write_intermediate(rows: Iterable[IntermediateRow], path: str | Path) -> int:
@@ -86,12 +111,13 @@ def read_intermediate(path: str | Path) -> list[IntermediateRow]:
     return out
 
 
-def write_final(rows: Iterable[dict], path: str | Path) -> int:
+def write_final(rows: Iterable[dict], path: str | Path, *, with_audit: bool = False) -> int:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = FINAL_FIELDS + AUDIT_FIELDS if with_audit else FINAL_FIELDS
     n = 0
     with path.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=FINAL_FIELDS)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
         for row in rows:
             writer.writerow(row)

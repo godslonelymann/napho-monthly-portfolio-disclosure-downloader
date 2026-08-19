@@ -5,13 +5,14 @@ from pathlib import Path
 import pandas as pd
 
 
-INPUT_FILE = Path("portfolio_manifest-remote-server.csv")
-OUTPUT_FILE = Path("filtered_data.csv")
+INPUT_FILE = Path("/Users/anurag./napho/amc-monthly-portfolio-downloader/outputs/portfolio_manifest.csv")
+OUTPUT_FILE = Path("filtered_data_new_v2.csv")
 EXCLUDED_STATUSES = {
     "NOT_YET_PUBLISHED",
     "YEAR_NOT_AVAILABLE",
     "MONTH_NOT_AVAILABLE",
     "ALREADY_EXISTS",
+    "SUCCESS",
 }
 
 
