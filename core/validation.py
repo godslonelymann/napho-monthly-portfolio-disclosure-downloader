@@ -49,6 +49,7 @@ STATUS_PARTIAL_BY_CONFIG = "PARTIAL_BY_CONFIG"
 # mid-run, not our download that failed. validate() itself never sets this;
 # it has no way to re-run discovery on its own.
 STATUS_SITE_CHANGED = "SITE_CHANGED"
+STATUS_UPSTREAM_GAP = "UPSTREAM_GAP"
 
 
 def _sha256(path: Path) -> str:
@@ -93,6 +94,7 @@ class ValidationReport:
     unexpected: tuple[str, ...] = ()
     stale: tuple[dict, ...] = ()
     duplicate_content: tuple[dict, ...] = ()
+    source_unavailable: tuple[dict, ...] = ()
     truncated_by_max_files: bool = False
     # Set post-hoc by core.cli.run_cli after an optional re-discovery pass
     # (see STATUS_SITE_CHANGED above) -- never set by validate() itself.
@@ -118,6 +120,8 @@ class ValidationReport:
     def status(self) -> str:
         if self.truncated_by_max_files:
             return STATUS_PARTIAL_BY_CONFIG
+        if self.source_unavailable:
+            return STATUS_UPSTREAM_GAP
         if not self.missing and not self.corrupt:
             return STATUS_SUCCESS
         # site_changed only ever gets set when every missing item -- not
@@ -153,6 +157,7 @@ class ValidationReport:
             "unexpected_files": list(self.unexpected),
             "stale_manifest_entries": list(self.stale),
             "duplicate_content": list(self.duplicate_content),
+            "source_unavailable": list(self.source_unavailable),
         }
 
     def render(self) -> str:
@@ -181,6 +186,13 @@ class ValidationReport:
         if self.unexpected:
             lines.append("Unexpected:")
             lines.extend(f"- {path}" for path in self.unexpected)
+            lines.append("")
+        if self.source_unavailable:
+            lines.append("Source unavailable:")
+            for entry in self.source_unavailable:
+                name = entry.get("filename") or entry.get("title") or entry.get("url") or "<unknown>"
+                reason = entry.get("reason") or entry.get("status") or "candidate URLs exhausted"
+                lines.append(f"- {name} ({reason})")
             lines.append("")
         if self.site_changed:
             lines.append(
@@ -276,11 +288,19 @@ def _iter_disk_files(output_root: Path):
 
 
 def validate(expectations: ExpectationSet, output_root: Path, *, manifest: dict | None = None) -> ValidationReport:
-    if not expectations.items:
+    source_candidates = tuple(expectations.discovery_notes.get("source_unavailable", []) or [])
+    if not expectations.items and not source_candidates:
         raise ValueError("Refusing to validate an ExpectationSet with zero items")
 
     manifest = manifest if manifest is not None else _read_manifest(output_root)
     downloads: dict = manifest.get("downloads", {}) or {}
+    failures: dict = manifest.get("failures", {}) or {}
+    # A probe-time 500 is allowed to recover during the actual download. Only
+    # retain it as an upstream gap if no successful manifest entry superseded
+    # that catalog record.
+    source_unavailable = tuple(
+        entry for entry in source_candidates if entry.get("url") not in downloads
+    )
 
     outcomes: list[ItemOutcome] = []
     accounted_paths: set[str] = set()
@@ -298,7 +318,16 @@ def validate(expectations: ExpectationSet, output_root: Path, *, manifest: dict 
                 break
 
         if entry is None:
-            outcomes.append(ItemOutcome(item=item, status="missing", reasons=("never appears in manifest.json",)))
+            failure = next((failures.get(url) for url in candidate_urls if url in failures), None)
+            if failure:
+                details = [failure.get("error") or "download failed"]
+                if failure.get("category"):
+                    details.insert(0, f"category={failure['category']}")
+                if failure.get("status") is not None:
+                    details.insert(1, f"status={failure['status']}")
+                outcomes.append(ItemOutcome(item=item, status="missing", reasons=tuple(details)))
+            else:
+                outcomes.append(ItemOutcome(item=item, status="missing", reasons=("never appears in manifest.json",)))
             continue
 
         matched_manifest_urls.add(matched_url)
@@ -349,6 +378,7 @@ def validate(expectations: ExpectationSet, output_root: Path, *, manifest: dict 
         unexpected=tuple(unexpected),
         stale=tuple(stale),
         duplicate_content=tuple(duplicate_content),
+        source_unavailable=source_unavailable,
         truncated_by_max_files=expectations.truncated_by_max_files,
     )
 

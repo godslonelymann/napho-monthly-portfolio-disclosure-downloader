@@ -87,32 +87,85 @@ def map_amc_to_house(slug: str, houses: list[str]) -> str | None:
     return max(matches, key=len)
 
 
-_PLAN_OPTION_KEYWORDS = (
-    "regular", "direct", "retail", "institutional", "segregated",
-    "growth", "idcw", "dividend", "bonus", "plan",
-)
 _GROWTH_RE = re.compile(r"\bgrowth\b", re.IGNORECASE)
 _EXCLUDE_OPTION_RE = re.compile(r"idcw|dividend|bonus|payout|reinvest", re.IGNORECASE)
 _DIRECT_RE = re.compile(r"\bdirect\b", re.IGNORECASE)
 _OTHER_PLAN_RE = re.compile(r"\bretail\b|\binstitutional\b|\bsegregated\b", re.IGNORECASE)
 _REGULAR_RE = re.compile(r"\bregular\b", re.IGNORECASE)
+_ANY_OPTION_RE = re.compile(r"\bgrowth\b|\bidcw\b|\bdividend\b|\bbonus\b|\bpayout\b|\breinvest", re.IGNORECASE)
 _PARENS_RE = re.compile(r"\([^)]*\)")
 
 
-_ANY_PLAN_OPTION_RE = re.compile(
-    r"\bregular\b|\bdirect\b|\bgrowth\b|\bidcw\b|\bdividend\b|\bbonus\b|\bplan\b|\bpayout\b|\breinvest\b",
-    re.IGNORECASE,
-)
+# The share-class vocabulary AMFI uses in the suffix, spelled out in full
+# ("Payout of Income Distribution cum capital withdrawal option").
+# Notably absent: "fund", which is what stops the trailing-run scan below
+# from eating into the fund's own name.
+_CLASS_WORDS = {
+    "regular", "direct", "retail", "institutional", "segregated", "seg",
+    "growth", "idcw", "dividend", "bonus", "plan", "option", "options",
+    "payout", "payment", "reinvest", "reinvestment", "income",
+    "distribution", "cum", "capital", "withdrawal", "unclaimed",
+    "redemption", "monthly", "quarterly", "annual", "and", "of", "the",
+    # AMFI's own typo, in SBI's rows. Cheaper to name than to leave a
+    # whole class of suffixes un-strippable.
+    "paln",
+}
+_WORD_SPLIT_RE = re.compile(r"[^A-Za-z0-9&]+")
+
+
+def split_class_suffix(full_name: str) -> tuple[str, str]:
+    """Split a scheme name into (fund name, share-class suffix).
+
+    The suffix is the longest *trailing run* of words that are share-class
+    vocabulary. Position-based truncation — cut at the first plan keyword
+    anywhere — looks equivalent and is what this used to do, but it fails
+    destructively whenever a plan word appears inside the fund's own name:
+    "Nippon India Growth Mid Cap Fund-Growth Plan-Growth Option" cut at
+    its first "Growth" leaves "Nippon India", a substring of every Nippon
+    scheme, so match_scheme's containment rule scored one code 0.90
+    against all of them and 39 of Nippon's 91 schemes mapped to Growth
+    Mid Cap. Scanning from the right instead stops at the first word that
+    belongs to the name ("Fund", "Savings", "Yield"), so a fund can be
+    called Growth, Regular, or Dividend Yield without losing its identity.
+    """
+    s = _PARENS_RE.sub("", full_name)
+    words = [w for w in _WORD_SPLIT_RE.split(s) if w]
+    cut = len(words)
+    while cut > 0 and words[cut - 1].lower() in _CLASS_WORDS:
+        cut -= 1
+    if cut == 0:  # nothing but class words; there is no name to keep
+        return " ".join(words), ""
+    return " ".join(words[:cut]), " ".join(words[cut:])
+
+
+def base_scheme_name(full_name: str) -> str:
+    return split_class_suffix(full_name)[0]
 
 
 def is_regular_growth(scheme_name: str) -> bool:
-    is_growth = bool(_GROWTH_RE.search(scheme_name)) and not _EXCLUDE_OPTION_RE.search(scheme_name)
-    if not is_growth:
+    """Regular-plan + Growth-option, decided on the share-class suffix
+    alone. Scanning the whole name reads the fund's own words as class
+    markers: "DSP Regular Savings Fund - Direct Plan - Growth" counted as
+    Regular because of the fund's name, so the Direct row was accepted as
+    the Regular one (same for ICICI's and Aditya Birla's Regular Savings
+    funds); and every "Dividend Yield Fund" was excluded outright as an
+    IDCW class, leaving those schemes with no candidate at all."""
+    suffix = split_class_suffix(scheme_name)[1]
+    if not suffix:
         return False
-    is_regular = bool(_REGULAR_RE.search(scheme_name)) or not (
-        _DIRECT_RE.search(scheme_name) or _OTHER_PLAN_RE.search(scheme_name)
+    if _EXCLUDE_OPTION_RE.search(suffix):
+        return False
+    # A suffix naming a plan but no option at all ("ICICI Prudential
+    # Children's Fund - Regular Plan", "Samco Mid Cap Fund - Regular
+    # Plan") is a scheme with no Growth/IDCW split: that row *is* its
+    # growth class. Requiring the literal word "Growth" left those
+    # schemes with no candidate, so the builder fell back to whatever
+    # else scored highest and merged them into a sibling fund.
+    if not _GROWTH_RE.search(suffix) and _ANY_OPTION_RE.search(suffix):
+        return False
+    return bool(_REGULAR_RE.search(suffix)) or not (
+        _DIRECT_RE.search(suffix) or _OTHER_PLAN_RE.search(suffix)
     )
-    return is_regular
 
 
 def is_single_class(scheme_name: str) -> bool:
@@ -120,19 +173,7 @@ def is_single_class(scheme_name: str) -> bool:
     navall.txt — just the bare name ("360 ONE Gold ETF") — so
     is_regular_growth's "growth" requirement excludes every ETF outright.
     Anything with zero plan/option markers is its own single class."""
-    return not _ANY_PLAN_OPTION_RE.search(scheme_name)
-
-
-def base_scheme_name(full_name: str) -> str:
-    s = _PARENS_RE.sub("", full_name)
-    idx = len(s)
-    for kw in _PLAN_OPTION_KEYWORDS:
-        m = re.search(r"\b" + kw + r"\b", s, re.IGNORECASE)
-        if m and m.start() < idx:
-            idx = m.start()
-    base = s[:idx]
-    base = re.sub(r"[-–—/]\s*$", "", base).strip()
-    return base
+    return not split_class_suffix(scheme_name)[1]
 
 
 _MONTHS = r"jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|jun(e)?|jul(y)?|aug(ust)?|sep(t|tember)?|oct(ober)?|nov(ember)?|dec(ember)?"
@@ -152,7 +193,25 @@ _REPORT_PERIOD_RE = re.compile(
 _LEADING_CODE_RE = re.compile(r"^[A-Z]{1,4}\d{1,4}[\-\s]+", re.IGNORECASE)
 
 
+# Fixed-maturity ETF/FOF series (Bharat Bond) are permanently named after
+# their target maturity year ("Bharat Bond ETF – April 2030") — that's
+# not a report-period stamp, it's the one thing that tells apart four
+# otherwise-identically-named schemes (April 2030/2031/2032/2033). The
+# report-period regex above can't tell a fund's real trailing year from
+# an incidental one — both are a bare month+year at the string's end —
+# so stripping it here collapsed all four maturities to the same
+# match_key and merged their holdings into a single scheme (200 rows
+# read for one AMFI code that ICRA lists at 85, corpus at ~400% instead
+# of 100%). Excluded by name rather than tightening the regex generally:
+# Zerodha's own report-period stamp has the same bare-suffix shape with
+# no "for"/"as on" qualifier to distinguish it, so the regex has to stay
+# permissive for everyone else.
+_FIXED_MATURITY_SERIES = ("bharat bond",)
+
+
 def _strip_report_period(name: str) -> str:
+    if any(kw in name.lower() for kw in _FIXED_MATURITY_SERIES):
+        return name
     return _REPORT_PERIOD_RE.sub("", name)
 
 
@@ -232,6 +291,40 @@ def match_scheme(scheme_name_raw: str, candidates: list[SchemeCandidate]) -> Mat
 
 CONFIDENCE_THRESHOLD = 0.82
 
+ICRA_CODES_PATH = "data/lookups/amfi_codes.csv"
+
+
+def _icra_code_index(path: str | Path = ICRA_CODES_PATH) -> dict[str, tuple[str, str]]:
+    """ICRA's accepted codes keyed by the normalized fund name.
+
+    ICRA identifies a scheme, not a share class, and its choice of code
+    frequently is not AMFI's Regular-Growth one: it lists SBI Consumption
+    Opportunities under 100645 (AMFI's IDCW row) and Quantum's funds
+    under their Direct-plan codes, while the Regular-Growth codes those
+    schemes do have are absent from ICRA's list entirely. A mapping built
+    purely from navall.txt is therefore correct about the fund and still
+    unjoinable, so the AMFI match below is translated through this index
+    before it is written.
+    """
+    index: dict[str, list[tuple[str, str]]] = {}
+    with Path(path).open(newline="") as f:
+        for row in csv.DictReader(f):
+            code = (row.get("AMFI Code") or "").strip()
+            name = (row.get("Fund_Name") or "").strip()
+            if code and code != "--" and name:
+                index.setdefault(_match_norm(base_scheme_name(name)), []).append((code, name))
+    # Ambiguous names are left out rather than guessed between.
+    return {k: v[0] for k, v in index.items() if len(v) == 1}
+
+
+def to_icra(result: MatchResult, icra_index: dict[str, tuple[str, str]]) -> MatchResult:
+    if result.fund_name is None:
+        return result
+    hit = icra_index.get(_match_norm(base_scheme_name(result.fund_name)))
+    if hit is None:
+        return result
+    return MatchResult(result.scheme_name_raw, hit[0], hit[1], result.score)
+
 
 def resolve_amc_schemes(
     amc: str,
@@ -247,9 +340,10 @@ def resolve_amc_schemes(
         return [], [MatchResult(s, None, None, 0.0) for s in sorted(scheme_names)], None
 
     candidates = build_candidates(houses[house])
+    icra_index = _icra_code_index()
     matched, review = [], []
     for name in sorted(scheme_names):
-        result = match_scheme(name, candidates)
+        result = to_icra(match_scheme(name, candidates), icra_index)
         if result.amfi_code is not None and result.score >= threshold:
             matched.append(result)
         else:

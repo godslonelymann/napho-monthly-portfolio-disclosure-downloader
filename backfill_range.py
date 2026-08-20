@@ -65,6 +65,9 @@ Status vocabulary (one CSV row per (amc, year, month), always):
                        structure it expects is gone (core.cli exit 9, or
                        messages like "no longer exposes", "structure
                        changed").
+  UPSTREAM_GAP         the AMC catalog still lists a document, but all
+                       approved source URLs are deterministically unavailable
+                       (core.cli exit 10).
   UNKNOWN_ERROR        anything else -- an uncaught exception that doesn't
                        match any pattern above. Always logged with its raw
                        message in the `error` column; never silently dropped.
@@ -131,6 +134,7 @@ INVALID_FILE = "INVALID_FILE"
 DISCOVERY_FAILED = "DISCOVERY_FAILED"
 HTTP_ERROR = "HTTP_ERROR"
 SITE_CHANGED = "SITE_CHANGED"
+UPSTREAM_GAP = "UPSTREAM_GAP"
 UNKNOWN_ERROR = "UNKNOWN_ERROR"
 
 # Cells already in one of these statuses are considered "done" by a resumed
@@ -146,7 +150,7 @@ UNKNOWN_ERROR = "UNKNOWN_ERROR"
 # are still genuinely in the future are short-circuited in main() before
 # the resume shortcut is ever consulted, so re-attempting these costs
 # nothing for the future-dated ones and is the whole point for the rest.
-_TERMINAL_UNAVAILABLE = {YEAR_NOT_AVAILABLE, MONTH_NOT_AVAILABLE, NO_DATA}
+_TERMINAL_UNAVAILABLE = {YEAR_NOT_AVAILABLE, MONTH_NOT_AVAILABLE, NO_DATA, UPSTREAM_GAP}
 _TERMINAL_SUCCESS = {SUCCESS, ALREADY_EXISTS}
 
 # Statuses worth retrying automatically within a single run_one() call.
@@ -481,6 +485,12 @@ def _attempt_one(
     if proc.returncode == 9:
         row["status"] = SITE_CHANGED
         row["description"] = f"Re-discovery confirmed the site no longer lists file(s) it originally listed: {reason}"
+        row["error"] = reason[:500]
+        return row
+
+    if proc.returncode == 10:
+        row["status"] = UPSTREAM_GAP
+        row["description"] = f"AMC catalog lists document(s) whose approved source URLs are unavailable: {reason}"
         row["error"] = reason[:500]
         return row
 

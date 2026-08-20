@@ -20,6 +20,21 @@ class PeriodUnavailable(RuntimeError):
     """
 
 
+@dataclass(frozen=True)
+class ResolutionResult:
+    """Adapter-side result for a catalog record's candidate URL resolution."""
+
+    url: str
+    status: str = "resolved"  # resolved | html | not_found | http_error | transport | empty
+    reason: str = ""
+    status_code: int | None = None
+    content_type: str | None = None
+
+    @property
+    def resolved(self) -> bool:
+        return self.status == "resolved"
+
+
 # A real document link is a short path/query, not free text.  The Bank of
 # India adapter once fed an entire unparsed JSON response through this
 # function as if it were a single URL, which urljoin() happily accepted and

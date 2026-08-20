@@ -22,6 +22,7 @@ class WriteUnresolvedTests(unittest.TestCase):
             quantity=100,
             market_value_raw=50.0,
             pct_raw=0.05,
+            port_date="2026-05-31",
         )
 
         with tempfile.TemporaryDirectory() as directory:

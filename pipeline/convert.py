@@ -39,21 +39,13 @@ from pathlib import Path
 
 from pipeline.isin_type import IsinTypeTable, load_isin_type_table
 from pipeline.names import NameTables, load_name_tables
-from pipeline.non_isin import NonIsinRules, load_non_isin_rules
+from pipeline.non_isin import ISIN_OVERRIDE_SAFE, NonIsinRules, load_non_isin_rules
 from pipeline.schema import IntermediateRow
 from pipeline.schemes import _match_norm
 
 # ICRA's own bucket for holdings it can't otherwise classify (243 rows in
 # the May 2026 sample, all with a blank ISIN — see data/lookups/instrument_types.csv).
 FALLBACK_CLASSIFICATION = {"Instrument_Name": "Undisclosed - Others", "Nature_Name": "Others"}
-
-# Non-ISIN closed-set categories safe to trust over a *present* ISIN cell
-# (see convert()'s precheck below) — deliberately a small subset of
-# non_isin.py's full rule set. "Gold"/"Silver"/"Cash" are single generic
-# words that collide with real, ISIN-bearing holdings by name coincidence
-# (Senco Gold Limited, Sky Gold And Diamonds Limited, a fund holding
-# another gold ETF's units); these three phrases are not real names.
-_NAME_OVERRIDE_SAFE = {"Net Receivables/(Payables)", "Reverse repo", "Margin Deposit"}
 
 BLANK_INDUSTRY = {
     "Basic_Industry": "",
@@ -136,6 +128,9 @@ class ConvertReport:
     # Written with a blank Security_Name — nothing in the harvested
     # isin_names.csv/isin_name_variants.csv covered this ISIN.
     blank_security_name: list[IntermediateRow] = field(default_factory=list)
+    # Rows dropped by _is_holding: no ISIN, no known non-ISIN instrument,
+    # and no name resolving to a real security. See _is_holding.
+    not_a_holding: list[IntermediateRow] = field(default_factory=list)
     # Schemes where the raw % column summed to neither ~100 nor ~1, so
     # convert() couldn't tell fraction from percent and wrote it as-is
     # (percent scale, factor 1) rather than guess.
@@ -192,6 +187,109 @@ def _detect_pct_scale(rows: list[IntermediateRow]) -> tuple[dict[str, float], se
     return scale, abstained
 
 
+def _implied_nav(rows: list[IntermediateRow], pct_scale: dict[str, float]) -> dict[str, float]:
+    """Each scheme's net assets, in the market-value column's own units.
+
+    Needed because SEBI's derivative disclosure reports a position's size
+    and value but no share of the portfolio — there is no % column on
+    that table at all. Every other row has both, so the scheme's own
+    rows give the ratio: net assets = total value / total share.
+    """
+    totals: dict[str, list[float]] = {}
+    for row in rows:
+        mkt, pct = _num(row.market_value_raw), _num(row.pct_raw)
+        if mkt is None or pct is None:
+            continue
+        acc = totals.setdefault(row.scheme_name_raw, [0.0, 0.0])
+        acc[0] += mkt
+        acc[1] += pct * pct_scale.get(row.scheme_name_raw, 1.0)
+    out: dict[str, float] = {}
+    for scheme, (mkt_sum, pct_sum) in totals.items():
+        if pct_sum > 1.0 and mkt_sum:
+            out[scheme] = mkt_sum / (pct_sum / 100.0)
+    return out
+
+
+def _holdings_only(
+    rows: list[IntermediateRow],
+    *,
+    lookups: Lookups,
+    amc_mapping: AmcMapping,
+    report: ConvertReport,
+) -> list[IntermediateRow]:
+    """Drop the rows that restate a total rather than hold anything.
+
+    A row is unidentifiable when it has no ISIN of its own, names none of
+    the instruments ICRA records with a blank ISIN (pipeline/non_isin.py),
+    and its printed name matches no known security. That alone is *not*
+    grounds to drop it — ICRA keeps 243 such rows itself, and Edelweiss's
+    per-scheme "Accrued Interest" line is a real holding by any measure.
+    Dropping every unidentifiable row cost 50 of Edelweiss's 67 schemes.
+
+    What separates a category header from a small unidentifiable holding
+    is arithmetic, not wording: a header restates the total of the rows
+    beneath it. ICICI's "Equity & Equity Related Instruments" carries
+    1041703.23, and so does the "Listed / Awaiting Listing On Stock
+    Exchanges" header under it, and so do the fourteen holdings after
+    that when added up. So the test is whether some run of the rows that
+    follow adds up to this row's own value — which is true of a heading
+    and a subtotal, and false of a holding.
+
+    This is what replaced extract.py's _CATEGORY_HEADER_RE and
+    _ASSET_CLASS_LABELS: those matched the nine spellings of these
+    headings that had been seen so far, and grew by one every time an AMC
+    was added.
+    """
+    def identifiable(row: IntermediateRow) -> bool:
+        return bool(
+            row.isin
+            or amc_mapping.non_isin.recognize(row.security_name, row.section_header)
+            or lookups.names.isin_from_name(row.security_name)
+        )
+
+    by_scheme: dict[str, list[IntermediateRow]] = {}
+    for row in rows:
+        by_scheme.setdefault(row.scheme_name_raw, []).append(row)
+
+    dropped: set[int] = set()
+    for srows in by_scheme.values():
+        for i, row in enumerate(srows):
+            if identifiable(row):
+                continue
+            value = _num(row.market_value_raw)
+            if value is None or value <= 0:
+                continue
+            # Does some run of the holdings below add up to this row?
+            #
+            # Only the identifiable ones are added up. Headings nest —
+            # ICICI's "Debt Instruments" is followed immediately by
+            # "Listed / Awaiting Listing On Stock Exchanges", which
+            # restates most of the same total — so counting every row
+            # below would double the inner heading's share and overshoot
+            # before the real holdings had been reached.
+            running = 0.0
+            for nxt in srows[i + 1:]:
+                if not identifiable(nxt):
+                    continue
+                nxt_value = _num(nxt.market_value_raw)
+                if nxt_value is None:
+                    continue
+                running += nxt_value
+                if abs(running - value) <= 0.005 * value:
+                    dropped.add(id(row))
+                    break
+                if running > value:
+                    break
+
+    kept = []
+    for row in rows:
+        if id(row) in dropped:
+            report.not_a_holding.append(row)
+        else:
+            kept.append(row)
+    return kept
+
+
 def convert(
     rows: list[IntermediateRow],
     *,
@@ -201,7 +299,15 @@ def convert(
     report = ConvertReport(total=len(rows))
     out: list[dict] = []
 
+    # Non-holdings are removed before the scale detection, not after.
+    # _detect_pct_scale decides fraction-vs-percent from how a scheme's %
+    # column sums, and a category header carries its whole category's
+    # share again — enough extra to push the sum past the threshold and
+    # flip the scale for the entire scheme. Filtering afterwards left
+    # every ICICI and Edelweiss scheme failing corpus_sum.
+    rows = _holdings_only(rows, lookups=lookups, amc_mapping=amc_mapping, report=report)
     pct_scale, report.pct_scale_abstained = _detect_pct_scale(rows)
+    nav = _implied_nav(rows, pct_scale)
 
     for row in rows:
         scheme = amc_mapping.schemes.get(_match_norm(row.scheme_name_raw))
@@ -212,13 +318,21 @@ def convert(
         output_isin = row.isin or ""
         security_name: str | None = None
 
-        # A row's own ISIN cell can hold a placeholder code that happens
-        # to be shape- *and* checksum-valid (PGIM's TREPS rows print
-        # "INTREP020226" — is_valid_isin(...) is True by coincidence) even
-        # though the row is a known non-ISIN instrument — see
-        # _NAME_OVERRIDE_SAFE above for why only some categories qualify.
-        precheck_instr, _precheck_nat = amc_mapping.non_isin.classify(row.security_name, None)
-        row_is_known_non_isin = precheck_instr in _NAME_OVERRIDE_SAFE
+        # A row's own ISIN cell can hold something that is not this
+        # row's ISIN: a placeholder that happens to be shape- *and*
+        # checksum-valid (PGIM's TREPS rows print "INTREP020226"), or, on
+        # a derivatives line, the underlying security's real ISIN. Both
+        # cases are settled by what the row is, not by whether the cell
+        # parses — see ISIN_OVERRIDE_SAFE for why only some categories
+        # get to overrule a present ISIN.
+        #
+        # The section header is part of the question. Passing None here
+        # meant the derivative rules — which key off the section, since a
+        # futures line's *name* is just the underlying's ("Infosys
+        # Ltd.-JUN2026") — could never fire, so every futures row was
+        # emitted as a second equity holding in the underlying's ISIN.
+        precheck = amc_mapping.non_isin.recognize(row.security_name, row.section_header)
+        row_is_known_non_isin = bool(precheck) and precheck[0] in ISIN_OVERRIDE_SAFE
 
         if row.isin and not row_is_known_non_isin:
             output_isin = lookups.isin_aliases.get(row.isin, row.isin)
@@ -254,6 +368,10 @@ def convert(
                         )
                     security_name = lookups.names.security_name(matched_isin) or row.security_name
                 else:
+                    # _holdings_only kept this row because its ISIN cell
+                    # held something, even though nothing downstream
+                    # could identify it. ICRA has this bucket too (243
+                    # rows in the May 2026 sample).
                     security_name = row.security_name
                     report.tagged_isin.append(row)
             else:
@@ -263,6 +381,14 @@ def convert(
         pct_raw = _num(row.pct_raw)
         quantity = _num(row.quantity)
         scale = pct_scale.get(row.scheme_name_raw, 1.0)
+
+        # Derivative-disclosure rows carry a value but no share of the
+        # portfolio, so derive it from the scheme's net assets. Stored
+        # pre-scale, since the output multiplies by `scale` below.
+        if pct_raw is None and mkt_value_lacs is not None:
+            scheme_nav = nav.get(row.scheme_name_raw)
+            if scheme_nav:
+                pct_raw = (mkt_value_lacs / scheme_nav * 100.0) / scale
 
         out.append(
             {

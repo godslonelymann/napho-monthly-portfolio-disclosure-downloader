@@ -242,6 +242,8 @@ def from_documents(
     *,
     discovery_notes: dict | None = None,
     truncated_by_max_files: bool = False,
+    amc: str | None = None,
+    period: str | None = None,
 ) -> ExpectationSet:
     """Build the expected set discovery just produced.
 
@@ -251,8 +253,22 @@ def from_documents(
     "unavailable" indistinguishable from "discovery quietly returned
     nothing", which is exactly the failure mode this system exists to catch.
     """
-    if not documents:
+    discovery_notes = discovery_notes or {}
+    if not documents and not discovery_notes.get("source_unavailable"):
         raise ValueError("Refusing to build an ExpectationSet from zero documents")
+
+    if not documents:
+        if not amc or not period:
+            raise ValueError("Empty source-gap expectations require amc and period")
+        return ExpectationSet(
+            amc=amc,
+            period=period,
+            discovered_at=datetime.now().astimezone().isoformat(timespec="seconds"),
+            source_pages=(),
+            items=(),
+            discovery_notes=discovery_notes,
+            truncated_by_max_files=truncated_by_max_files,
+        )
 
     amcs = {document.amc for document in documents}
     periods = {document.period for document in documents}
@@ -304,7 +320,7 @@ def from_documents(
         source_pages=tuple(sorted({document.source_page_url for document in documents})),
         items=tuple(items),
         duplicates=duplicates,
-        discovery_notes=discovery_notes or {},
+        discovery_notes=discovery_notes,
         truncated_by_max_files=truncated_by_max_files,
     )
 

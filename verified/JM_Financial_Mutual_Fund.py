@@ -16,7 +16,7 @@ if __package__ in {None, ""}:
 
 from core.cli import run_cli
 from core.config import settings
-from core.discovery import PeriodUnavailable, dedupe_documents, document_from_link, only_period
+from core.discovery import DiscoveryResult, PeriodUnavailable, ResolutionResult, dedupe_documents, document_from_link, only_period
 from core.http import create_session, post_json
 from core.periods import period_conflicts, period_matches
 
@@ -104,7 +104,7 @@ def _drop_duplicated_year_digit(url: str) -> str | None:
     return fixed if fixed != url else None
 
 
-def _resolve_url(session, url: str) -> str:
+def _resolve_url(session, url: str) -> ResolutionResult:
     """Return whichever of ``url`` or its typo-corrected form the file host
     actually serves. A broken filename here doesn't 404 -- the WAF answers
     200 with the site's own homepage HTML, so a candidate is only trusted
@@ -115,19 +115,36 @@ def _resolve_url(session, url: str) -> str:
     if variant:
         candidates.append(variant)
     for candidate in candidates:
+        response = None
         try:
             response = session.get(candidate, stream=True, timeout=(10, 30))
             content_type = response.headers.get("Content-Type", "")
-            response.close()
-            if response.status_code == 200 and "html" not in content_type.lower():
-                return candidate
+            status = getattr(response, "status_code", None)
+            if status == 200 and "html" not in content_type.lower():
+                return ResolutionResult(url=candidate, content_type=content_type)
+            if status == 200:
+                result = ResolutionResult(url=candidate, status="html", reason="HTTP 200 response is HTML", status_code=status, content_type=content_type)
+            elif status == 404:
+                result = ResolutionResult(url=url, status="not_found", reason="file host returned HTTP 404", status_code=status, content_type=content_type)
+            elif status is not None and status >= 500:
+                result = ResolutionResult(url=url, status="http_error", reason=f"file host returned HTTP {status}", status_code=status, content_type=content_type)
+            else:
+                result = ResolutionResult(url=url, status="empty", reason=f"file host returned HTTP {status}", status_code=status, content_type=content_type)
+            if result.status == "html":
+                # Keep probing a typo-corrected sibling candidate; if none
+                # resolves, the HTML record is retained by discovery.
+                continue
         except Exception:
-            continue
-    return url
+            result = ResolutionResult(url=url, status="transport", reason="file-host probe failed")
+        finally:
+            if response is not None and hasattr(response, "close"):
+                response.close()
+    return result
 
 
 def _documents_from_records(records: list[dict], period: str, session):
-    documents = []
+    candidates = []
+    unavailable = []
     for record in records:
         if record["SubCategoryName"].strip().casefold() != _MONTHLY_SUBCATEGORY.casefold():
             continue
@@ -142,13 +159,39 @@ def _documents_from_records(records: list[dict], period: str, session):
                 f"JM Financial monthly catalog exposed unsupported file type {record['FileEXT']!r}"
             )
         url = urljoin(FILE_BASE_URL.rstrip("/") + "/", filename.lstrip("/"))
-        url = _resolve_url(session, url)
-        documents.append(
-            document_from_link(
+        resolution = _resolve_url(session, url)
+        # A probe transport failure is not proof that a catalog record is
+        # unavailable. Keep the record so the download phase can report the
+        # actual transport failure; deterministic 404/empty/5xx results are
+        # recorded as source-side gaps instead.
+        if resolution.status in {"not_found", "empty"}:
+            unavailable.append({
+                "period": period,
+                "title": title,
+                "filename": Path(filename).name,
+                "url": url,
+                "download_id": record.get("DownloadID"),
+                "status": resolution.status,
+                "reason": resolution.reason,
+            })
+            continue
+        if resolution.status == "http_error":
+            # Keep a 500 record in the downloadable set: the download phase
+            # owns bounded retry policy for transient server failures.
+            unavailable.append({
+                "period": period,
+                "title": title,
+                "filename": Path(filename).name,
+                "url": url,
+                "download_id": record.get("DownloadID"),
+                "status": resolution.status,
+                "reason": resolution.reason,
+            })
+        candidates.append((record, resolution, document_from_link(
                 amc=AMC,
                 period=period,
                 source_page_url=PAGE_URL,
-                link=url,
+                link=resolution.url,
                 label=title,
                 filename=Path(filename).name,
                 file_type=file_type,
@@ -158,18 +201,54 @@ def _documents_from_records(records: list[dict], period: str, session):
                     "document_date": record.get("DocumentDate"),
                     "category": record.get("CategoryName"),
                     "subcategory": record.get("SubCategoryName"),
+                    "resolution_status": resolution.status,
                 },
-            )
-        )
-    return only_period(dedupe_documents(documents), period)
+            )))
+
+    # The same title can occur more than once in a monthly catalog. Resolve
+    # the group before creating the final document list so an HTML-only
+    # duplicate is suppressed only when a sibling is a real document.
+    groups: dict[tuple[str, str, str], list[tuple[dict, ResolutionResult, object]]] = {}
+    for record, resolution, document in candidates:
+        key = (period, re.sub(r"\s+", " ", str(record["Title"]).strip()).casefold(), record["SubCategoryName"].strip().casefold())
+        groups.setdefault(key, []).append((record, resolution, document))
+
+    documents = []
+    rejected = []
+    for group in groups.values():
+        ordered = sorted(group, key=lambda entry: (entry[1].status != "resolved",))
+        chosen = ordered[0]
+        documents.append(chosen[2])
+        if len(ordered) > 1:
+            for duplicate, duplicate_resolution, _document in ordered[1:]:
+                rejected.append({
+                    "download_id": duplicate.get("DownloadID"),
+                    "title": duplicate.get("Title"),
+                    "reason": "equivalent catalog record; preferred a non-HTML sibling" if chosen[1].status == "resolved" else "equivalent duplicate; kept first HTML-only record",
+                })
+            # A deterministic error on an equivalent sibling is represented
+            # by the rejected-duplicate note, not as an independent source
+            # gap when a valid sibling won the group.
+            if chosen[1].status == "resolved":
+                group_ids = {entry[0].get("DownloadID") for entry in group}
+                unavailable[:] = [entry for entry in unavailable if entry.get("download_id") not in group_ids]
+    documents = only_period(dedupe_documents(documents), period)
+    notes = {}
+    if unavailable:
+        notes["source_unavailable"] = unavailable
+    if rejected:
+        notes["rejected_duplicates"] = rejected
+    return documents, notes
 
 
 def discover(period: str, session=None):
     active_session = session or _browser_ua_session()
-    documents = _documents_from_records(_fetch_records(active_session), period, active_session)
+    documents, notes = _documents_from_records(_fetch_records(active_session), period, active_session)
     if not documents:
+        if notes.get("source_unavailable"):
+            return DiscoveryResult(documents=[], notes=notes)
         raise PeriodUnavailable(f"JM Financial publishes no monthly portfolio for {period}")
-    return documents
+    return DiscoveryResult(documents=documents, notes=notes) if notes else documents
 
 
 def _browser_ua_session():

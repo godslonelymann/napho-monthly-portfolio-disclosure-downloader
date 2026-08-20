@@ -27,6 +27,7 @@ from .validation import (
     STATUS_INCOMPLETE,
     STATUS_PARTIAL_BY_CONFIG,
     STATUS_SITE_CHANGED,
+    STATUS_UPSTREAM_GAP,
     STATUS_SUCCESS,
     validate,
     write_validation,
@@ -43,6 +44,7 @@ _STATUS_EXIT_CODES = {
     STATUS_CORRUPT: 7,
     STATUS_PARTIAL_BY_CONFIG: 8,
     STATUS_SITE_CHANGED: 9,
+    STATUS_UPSTREAM_GAP: 10,
 }
 
 
@@ -54,6 +56,28 @@ class DownloadOutcome:
     status: str  # "downloaded" | "extracted" | "skipped" | "failed"
     destination: str | None = None  # path relative to output_root, when known
     error: str | None = None
+
+
+class DownloadFailure(RuntimeError):
+    """Typed failure used to decide whether another full download is useful."""
+
+    def __init__(
+        self,
+        reason: str,
+        *,
+        category: str,
+        retryable: bool,
+        status: int | None = None,
+        content_type: str | None = None,
+        fingerprint: str | None = None,
+    ):
+        super().__init__(reason)
+        self.category = category
+        self.retryable = retryable
+        self.status = status
+        self.content_type = content_type
+        self.fingerprint = fingerprint
+        self.attempts = 1
 
 
 def _safe_name(document: Document) -> str:
@@ -69,16 +93,48 @@ def _safe_name(document: Document) -> str:
     return name or "portfolio"
 
 
-def _validate_magic(path: Path, document: Document) -> None:
-    data = path.read_bytes()[:8]
+def _validate_magic(path: Path, document: Document, response_context: dict | None = None) -> None:
+    context = response_context or {}
+    size = path.stat().st_size
+    status = context.get("status")
+    content_type = context.get("content_type") or "<missing>"
+    response_url = context.get("url") or document.url
+    content_length = context.get("content_length")
+    if status == 204 or content_length == 0 or size == 0:
+        raise DownloadFailure(
+            f"Empty response: status={status or 200} content_type={content_type} url={response_url}; "
+            f"{document.url} did not return a ZIP/XLSX payload",
+            category="empty_response",
+            retryable=False,
+            status=status,
+            content_type=content_type,
+        )
+    data = path.read_bytes()[:512]
     suffix = document.file_type.lower()
+    fingerprint = hashlib.sha256(path.read_bytes()[:512]).hexdigest()
+    if "html" in str(content_type).lower() or data.lstrip().lower().startswith((b"<!doctype html", b"<html")):
+        raise DownloadFailure(
+            f"HTML response: status={status or 200} content_type={content_type} url={response_url}",
+            category="html_response",
+            retryable=True,
+            status=status,
+            content_type=content_type,
+            fingerprint=fingerprint,
+        )
     # .xlsb is binary *inside* the sheet parts but is still OOXML/ZIP packaging,
     # so it carries the same "PK" header as .xlsx.  Without it listed here the
     # file falls through every branch below and gets no validation at all.
     if suffix in {"xlsx", "xlsm", "xlsb", "zip"} and not (
         data.startswith(b"PK") or (suffix == "xlsx" and data.startswith(b"\xd0\xcf\x11\xe0"))
     ):
-        raise RuntimeError(f"{document.url} did not return a ZIP/XLSX payload")
+        raise DownloadFailure(
+            f"{document.url} did not return a ZIP/XLSX payload (status={status or 200} content_type={content_type} url={response_url})",
+            category="invalid_payload",
+            retryable=True,
+            status=status,
+            content_type=content_type,
+            fingerprint=fingerprint,
+        )
     # SpreadsheetML 2003 (an XML dialect, optionally BOM-prefixed) is also a
     # legitimate ".xls" payload -- e.g. Navi serves some months as
     # "\xef\xbb\xbf<?xml ...", which isn't PK/OLE2 but isn't corrupt either.
@@ -88,9 +144,14 @@ def _validate_magic(path: Path, document: Document) -> None:
         or data.lstrip(b"\xef\xbb\xbf").startswith(b"<?xml")
         or data.startswith((b"\x09\x00\x04\x00", b"\x09\x02\x06\x00", b"\x09\x04\x06\x00"))
     ):
-        raise RuntimeError(f"{document.url} did not return an XLS/XLSX payload")
-    if not data:
-        raise RuntimeError(f"{document.url} returned an empty payload")
+        raise DownloadFailure(
+            f"{document.url} did not return an XLS/XLSX payload (status={status or 200} content_type={content_type} url={response_url})",
+            category="invalid_payload",
+            retryable=True,
+            status=status,
+            content_type=content_type,
+            fingerprint=fingerprint,
+        )
 
 
 def _manifest_path(root: Path) -> Path:
@@ -114,6 +175,23 @@ def _write_manifest(path: Path, manifest: dict) -> None:
     os.replace(temporary, path)
 
 
+def _record_failure(manifest: dict, document: Document, exc: Exception) -> None:
+    failure = exc if isinstance(exc, DownloadFailure) else None
+    manifest.setdefault("failures", {})[document.url] = {
+        "amc": document.amc,
+        "period": document.period,
+        "filename": _safe_name(document),
+        "scheme": document.scheme,
+        "category": failure.category if failure else "transport",
+        "status": failure.status if failure else None,
+        "content_type": failure.content_type if failure else None,
+        "fingerprint": failure.fingerprint if failure else None,
+        "attempts": getattr(exc, "attempts", 1),
+        "error": str(exc),
+        "failed_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+    }
+
+
 def _response_header(response, name: str) -> str | None:
     headers = getattr(response, "headers", None) or {}
     try:
@@ -121,6 +199,20 @@ def _response_header(response, name: str) -> str | None:
     except AttributeError:
         return None
     return str(value) if value else None
+
+
+def _response_context(response, document: Document) -> dict:
+    raw_length = _response_header(response, "Content-Length")
+    try:
+        content_length = int(raw_length) if raw_length is not None else None
+    except ValueError:
+        content_length = None
+    return {
+        "status": getattr(response, "status_code", None),
+        "content_type": _response_header(response, "Content-Type"),
+        "content_length": content_length,
+        "url": getattr(response, "url", None) or document.url,
+    }
 
 
 def _sha256(path: Path) -> str:
@@ -255,12 +347,17 @@ def _download_one(
             )
         except requests.Timeout as exc:
             attempts = getattr(session, "retry_total", 0) + 1
-            raise RuntimeError(
-                f"Timeout: url={document.url} phase=download attempts<={attempts}: {exc}"
+            raise DownloadFailure(
+                f"Timeout: url={document.url} phase=download attempts<={attempts}: {exc}",
+                category="transport", retryable=True,
             ) from exc
         except requests.RequestException as exc:
-            raise RuntimeError(f"Request failed: url={document.url} phase=download: {exc}") from exc
+            raise DownloadFailure(
+                f"Request failed: url={document.url} phase=download: {exc}",
+                category="transport", retryable=True,
+            ) from exc
         try:
+            response_context = _response_context(response, document)
             if getattr(response, "status_code", None) == 304:
                 # The file host confirmed our copy is still current, so the
                 # bytes on disk (already hash-checked by
@@ -271,7 +368,24 @@ def _download_one(
                     status="skipped",
                     destination=existing_entry.get("path"),
                 )
-            response.raise_for_status()
+            status = response_context["status"]
+            if status is not None and status >= 400:
+                retryable = status == 429 or status >= 500
+                raise DownloadFailure(
+                    f"HTTP response: status={status} content_type={response_context['content_type'] or '<missing>'} url={response_context['url']}",
+                    category="http_error",
+                    retryable=retryable,
+                    status=status,
+                    content_type=response_context["content_type"],
+                )
+            if status == 204 or response_context["content_length"] == 0:
+                raise DownloadFailure(
+                    f"Empty response: status={status or 200} content_type={response_context['content_type'] or '<missing>'} url={response_context['url']}",
+                    category="empty_response",
+                    retryable=False,
+                    status=status,
+                    content_type=response_context["content_type"],
+                )
             with tempfile.NamedTemporaryFile(prefix=".portfolio-", suffix=".part", dir=output_root, delete=False) as handle:
                 temporary_path = Path(handle.name)
                 for chunk in response.iter_content(chunk_size=1024 * 1024):
@@ -279,14 +393,18 @@ def _download_one(
                         handle.write(chunk)
         except requests.Timeout as exc:
             attempts = getattr(session, "retry_total", 0) + 1
-            raise RuntimeError(
-                f"Timeout: url={document.url} phase=download attempts<={attempts}: {exc}"
+            raise DownloadFailure(
+                f"Timeout: url={document.url} phase=download attempts<={attempts}: {exc}",
+                category="transport", retryable=True,
             ) from exc
         except requests.RequestException as exc:
-            raise RuntimeError(f"Request failed: url={document.url} phase=download: {exc}") from exc
+            raise DownloadFailure(
+                f"Request failed: url={document.url} phase=download: {exc}",
+                category="transport", retryable=True,
+            ) from exc
         finally:
             response.close()
-        _validate_magic(temporary_path, document)
+        _validate_magic(temporary_path, document, response_context)
         digest = _sha256(temporary_path)
         if config.extract_archives and looks_like_archive(document.file_type, temporary_path):
             entry, status = _extract_and_record(
@@ -314,7 +432,7 @@ def _download_one(
                 "path": destination.relative_to(output_root).as_posix(),
                 "bytes": destination.stat().st_size,
                 "sha256": digest,
-                "content_type": mimetypes.guess_type(destination.name)[0],
+                "content_type": response_context.get("content_type") or mimetypes.guess_type(destination.name)[0],
                 # Recorded so the next run can ask the file host whether
                 # anything changed instead of re-fetching every workbook.
                 "etag": _response_header(response, "ETag"),
@@ -362,15 +480,37 @@ def _download_with_retries(
     attempts = getattr(config, "retry_total", 0) + 1
     backoff = getattr(config, "retry_backoff", 0.0)
     last_exc: Exception | None = None
+    html_retried = False
+    previous_html_fingerprint = None
     for attempt in range(1, attempts + 1):
         try:
             return _download_one(session, document, destination, output_root, config, downloads, timeout)
         except Exception as exc:
-            last_exc = exc
-            if attempt < attempts:
+            if isinstance(exc, DownloadFailure):
+                failure = exc
+            else:
+                failure = DownloadFailure(
+                    f"Request failed: url={document.url} phase=download: {exc}",
+                    category="transport", retryable=True,
+                )
+            failure.attempts = attempt
+            last_exc = failure
+            retry = failure.retryable
+            if failure.category == "html_response":
+                if html_retried or (
+                    previous_html_fingerprint is not None
+                    and failure.fingerprint == previous_html_fingerprint
+                ):
+                    retry = False
+                else:
+                    html_retried = True
+                    previous_html_fingerprint = failure.fingerprint
+            if retry and attempt < attempts:
                 print(f"retrying   {document.period} {_safe_name(document)} (attempt {attempt}/{attempts}): {exc}")
                 if backoff:
                     time.sleep(backoff * attempt)
+            else:
+                break
     raise last_exc
 
 
@@ -402,6 +542,7 @@ def download_documents(
     manifest_path = _manifest_path(output_root)
     manifest = _read_manifest(manifest_path)
     downloads = manifest.setdefault("downloads", {})
+    failures = manifest.setdefault("failures", {})
     timeout = getattr(session, "default_timeout", (30, 120))
     # Two distinct documents landing on the same destination filename means the
     # naming scheme can't tell them apart -- e.g. NJ Mutual Fund's viewfile.php
@@ -427,6 +568,7 @@ def download_documents(
         try:
             outcome = _download_with_retries(session, document, destination, output_root, config, downloads, timeout)
         except Exception as exc:
+            _record_failure(manifest, document, exc)
             if not continue_on_error:
                 # Persist whatever documents already succeeded before this
                 # one failed -- previously an abort here discarded that
@@ -436,6 +578,8 @@ def download_documents(
             print(f"failed     {document.period} {_safe_name(document)}: {exc}")
             outcome = DownloadOutcome(document=document, status="failed", error=str(exc))
         outcomes.append(outcome)
+        if outcome.status in {"downloaded", "extracted", "skipped"}:
+            failures.pop(document.url, None)
         if index + 1 < len(documents) and delay_seconds:
             time.sleep(delay_seconds)
     _write_manifest(manifest_path, manifest)
@@ -474,7 +618,7 @@ def run_cli(
         print(f"unavailable: {exc}")
         return 2
     documents, adapter_notes = _unwrap_discovery(result)
-    if not documents:
+    if not documents and not adapter_notes.get("source_unavailable"):
         raise RuntimeError(f"{amc} returned zero documents for {config.period}")
     full_discovered_count = len(documents)
     truncated_by_max_files = bool(config.max_files and full_discovered_count > config.max_files)
@@ -494,7 +638,7 @@ def run_cli(
             destination = destination / subdir
         destination = destination / config.period
 
-        if not config.validate and not config.validate_only:
+        if documents and not config.validate and not config.validate_only:
             # AMC_VALIDATE=0 escape hatch: old discover-then-download-and-trust
             # behavior, untouched, for rolling back the whole pipeline at once.
             download_documents(session, documents, destination, delay_seconds=config.delay_seconds)
@@ -508,6 +652,8 @@ def run_cli(
             documents,
             discovery_notes=discovery_notes,
             truncated_by_max_files=truncated_by_max_files,
+            amc=amc,
+            period=config.period,
         )
         write_expectations(destination, expectations)
 
@@ -521,7 +667,8 @@ def run_cli(
             # continue_on_error=True: one bad file must not hide whether the
             # other N-1 succeeded -- validate() below is what decides success,
             # not whether this call happened to raise.
-            download_documents(session, documents, destination, delay_seconds=config.delay_seconds, continue_on_error=True)
+            if documents:
+                download_documents(session, documents, destination, delay_seconds=config.delay_seconds, continue_on_error=True)
 
         report = validate(expectations, destination)
 
